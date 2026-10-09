@@ -1,0 +1,342 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+.day-panel {
+  @include card;
+
+  &__header {
+    margin-bottom: $space-md;
+
+    h2 {
+      @include card-title;
+      margin-bottom: $space-sm;
+    }
+  }
+
+  &__totals {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+
+    span {
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: $color-subtle;
+    }
+  }
+
+  &__list {
+    list-style: none;
+    margin: 0 0 $space-md;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__empty {
+    margin: 0 0 $space-md;
+    padding: 20px $space-md;
+    text-align: center;
+    font-size: 13px;
+    color: $color-muted;
+    background: $color-subtle;
+    border-radius: $radius;
+  }
+
+  &__form-title {
+    margin: 0 0 12px;
+    padding-top: $space-md;
+    border-top: 1px solid $color-border;
+    font-size: 13px;
+    font-weight: 700;
+    color: $color-text-soft;
+  }
+}
+
+.tx-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas:
+    'icon info amount'
+    'icon info actions';
+  align-items: center;
+  gap: 0 12px;
+  padding: 10px;
+  margin: 0 -10px;
+  border-radius: $radius;
+  transition: background 0.12s;
+
+  &:hover {
+    background: $color-subtle;
+  }
+
+  &.is-editing {
+    background: $color-primary-soft;
+  }
+
+  // 아직 날짜가 안 된 내역(고정 항목 예정분)은 흐리게
+  &.is-upcoming .tx-item__amount,
+  &.is-upcoming .tx-item__category {
+    opacity: 0.55;
+  }
+
+  &__tag {
+    padding: 0 6px;
+    border-radius: 999px;
+    background: $color-subtle;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.7;
+    color: $color-text-soft;
+    white-space: nowrap;
+
+    &--upcoming {
+      background: $color-primary-soft;
+      color: $color-primary;
+    }
+  }
+
+  &__note {
+    font-size: 11px;
+    color: $color-muted;
+  }
+
+  &__icon {
+    grid-area: icon;
+    display: flex;
+  }
+
+  &__info {
+    grid-area: info;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  &__category {
+    font-weight: 600;
+  }
+
+  &__memo {
+    font-size: 12px;
+    color: $color-muted;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__amount {
+    grid-area: amount;
+    text-align: right;
+    font-weight: 700;
+  }
+
+  &__actions {
+    grid-area: actions;
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+
+    button {
+      @include button-reset;
+      font-size: 12px;
+      color: $color-muted;
+
+      &:hover {
+        color: $color-primary;
+      }
+
+      &.is-danger:hover {
+        color: $color-expense;
+      }
+    }
+  }
+}
+
+.tx-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  // 작성자 선택
+  &__users {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: $space-sm;
+  }
+
+  &__user {
+    @include button-reset;
+    padding: 9px;
+    border-radius: $radius;
+    background: $color-subtle;
+    font-weight: 700;
+    color: $color-muted;
+    transition:
+      background 0.15s,
+      color 0.15s;
+
+    &.is-active {
+      background: color-mix(in srgb, var(--user-color) 12%, transparent);
+      box-shadow: inset 0 0 0 1.5px var(--user-color);
+      color: var(--user-color);
+    }
+  }
+
+  // 지출/수입/저축 세그먼트 컨트롤
+  &__types {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    padding: 4px;
+    border-radius: $radius;
+    background: $color-subtle;
+  }
+
+  &__type {
+    @include button-reset;
+    padding: 7px;
+    border-radius: 9px;
+    font-weight: 600;
+    color: $color-muted;
+    transition:
+      background 0.15s,
+      color 0.15s;
+
+    &.is-active {
+      background: $color-surface;
+      box-shadow: 0 1px 3px rgba(16, 24, 40, 0.1);
+    }
+
+    &--expense.is-active {
+      color: $color-expense;
+    }
+
+    &--income.is-active {
+      color: $color-income;
+    }
+
+    &--saving.is-active {
+      color: $color-saving;
+    }
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    > span {
+      font-size: 12px;
+      font-weight: 600;
+      color: $color-text-soft;
+    }
+
+    input,
+    select {
+      @include filled-input;
+    }
+
+    input[name='amount'] {
+      font-size: 16px;
+      font-weight: 700;
+    }
+  }
+
+  &__categories {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+    gap: 4px;
+  }
+
+  &__category {
+    @include button-reset;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 2px 6px;
+    border-radius: $radius;
+    transition: background 0.12s;
+
+    > span:last-child {
+      font-size: 11px;
+      color: $color-muted;
+      white-space: nowrap;
+    }
+
+    &:hover {
+      background: $color-subtle;
+    }
+
+    &.is-active {
+      background: $color-primary-soft;
+      box-shadow: inset 0 0 0 1.5px rgba($color-primary, 0.5);
+
+      > span:last-child {
+        color: $color-text;
+        font-weight: 600;
+      }
+    }
+  }
+
+  &__error {
+    margin: 0;
+    font-size: 12px;
+    color: $color-expense;
+  }
+
+  &__row {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: $space-sm;
+  }
+
+  &__hint {
+    margin: -6px 0 0;
+    font-size: 11px;
+    color: $color-muted;
+  }
+
+  &__check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: $radius;
+    background: $color-subtle;
+    font-weight: 600;
+    cursor: pointer;
+
+    input {
+      width: 16px;
+      height: 16px;
+      accent-color: $color-primary;
+    }
+
+    small {
+      margin-left: 4px;
+      font-weight: 500;
+      color: $color-muted;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    gap: $space-sm;
+
+    .btn {
+      flex: 1;
+    }
+  }
+}
+

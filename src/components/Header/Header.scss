@@ -1,0 +1,149 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-md;
+  flex-wrap: wrap;
+  margin-bottom: $space-lg;
+
+  &__brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  &__logo {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 11px;
+    background: $color-primary;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba($color-primary, 0.3);
+
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+
+  &__nav {
+    display: flex;
+    align-items: center;
+    gap: $space-sm;
+  }
+
+  &__pill {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 4px;
+    border-radius: 999px;
+    background: $color-surface;
+    box-shadow: $shadow;
+  }
+
+  &__arrow {
+    @include button-reset;
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    color: $color-text-soft;
+    transition: background 0.15s;
+
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    &:hover {
+      background: $color-subtle;
+      color: $color-text;
+    }
+  }
+
+  &__current {
+    display: flex;
+    align-items: center;
+    padding: 0 2px;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  &__year,
+  &__month {
+    border: none;
+    border-radius: $radius-sm;
+    background: transparent;
+    color: $color-text;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+
+    &:hover,
+    &:focus {
+      background: $color-subtle;
+      outline: none;
+    }
+  }
+
+  &__year {
+    width: 4.2ch;
+    padding: 4px 0;
+    text-align: right;
+    -moz-appearance: textfield;
+
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+  }
+
+  &__month {
+    padding: 4px 2px 4px 6px;
+  }
+
+  &__today {
+    @include button-reset;
+    height: 42px;
+    padding: 0 18px;
+    border-radius: 999px;
+    background: $color-surface;
+    box-shadow: $shadow;
+    font-weight: 600;
+    color: $color-text-soft;
+    transition: color 0.15s;
+
+    &:hover {
+      color: $color-primary;
+    }
+  }
+
+  @include mobile {
+    margin-bottom: $space-md;
+
+    &__title {
+      font-size: 18px;
+    }
+
+    &__logo {
+      width: 32px;
+      height: 32px;
+    }
+  }
+}

@@ -1,0 +1,82 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+.login {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: $space-md;
+
+  &__card {
+    @include card;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+    max-width: 360px;
+    padding: $space-xl $space-lg;
+  }
+
+  &__logo {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    margin: 0 auto;
+    border-radius: 14px;
+    background: $color-primary;
+    color: #fff;
+    box-shadow: 0 6px 16px rgba($color-primary, 0.3);
+
+    svg {
+      width: 26px;
+      height: 26px;
+    }
+  }
+
+  &__title {
+    margin: 0;
+    text-align: center;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+
+  &__desc {
+    margin: -8px 0 $space-sm;
+    text-align: center;
+    font-size: 13px;
+    color: $color-muted;
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    > span {
+      font-size: 12px;
+      font-weight: 600;
+      color: $color-text-soft;
+    }
+
+    input {
+      @include filled-input;
+    }
+  }
+
+  &__error {
+    margin: 0;
+    font-size: 13px;
+    color: $color-expense;
+  }
+
+  &__submit {
+    margin-top: $space-xs;
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+  }
+}

@@ -1,0 +1,32 @@
+// 색상
+$color-bg: #f3f4f8;
+$color-surface: #ffffff;
+$color-subtle: #f6f7fa; // 카드 안의 입력칸, 보조 영역
+$color-border: #eceef3;
+$color-text: #1d2130;
+$color-text-soft: #4b5163;
+$color-muted: #9097a8;
+$color-primary: #5a5fe8;
+$color-primary-soft: #eff0fe;
+$color-income: #2a78d6;
+$color-expense: #e34948;
+$color-saving: #12a37f;
+$color-sunday: #e34948;
+$color-saturday: #2a78d6;
+
+// 간격 / 모양
+$space-xs: 4px;
+$space-sm: 8px;
+$space-md: 16px;
+$space-lg: 24px;
+$space-xl: 32px;
+$radius-lg: 20px; // 카드
+$radius: 12px; // 입력칸, 버튼
+$radius-sm: 8px;
+$shadow:
+  0 1px 2px rgba(16, 24, 40, 0.04),
+  0 6px 24px rgba(16, 24, 40, 0.05);
+
+// 브레이크포인트
+$bp-tablet: 900px;
+$bp-mobile: 560px;

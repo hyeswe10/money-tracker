@@ -1,0 +1,397 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+.summary-card {
+  @include card;
+
+  &__title {
+    @include card-title;
+  }
+
+  // 제목 옆 보기 범위 (전체/정우/계주)
+  &__scope {
+    margin-left: 4px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: $color-subtle;
+    font-size: 11px;
+    font-weight: 600;
+    color: $color-text-soft;
+    vertical-align: 2px;
+  }
+
+  &__subtitle {
+    margin: 20px 0 $space-sm;
+    font-size: 12px;
+    font-weight: 700;
+    color: $color-text-soft;
+  }
+
+  &__empty {
+    margin: 0;
+    padding: 20px $space-md;
+    text-align: center;
+    font-size: 13px;
+    color: $color-muted;
+    background: $color-subtle;
+    border-radius: $radius;
+  }
+}
+
+.monthly-summary {
+  margin: 0;
+
+  dt {
+    font-size: 12px;
+    font-weight: 600;
+    color: $color-muted;
+  }
+
+  dd {
+    margin: 0;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  &__balance {
+    margin-bottom: $space-md;
+
+    dd {
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+  }
+
+  &__tiles {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: $space-sm;
+  }
+
+  &__tile {
+    min-width: 0;
+    padding: 10px 12px;
+    border-radius: $radius;
+    background: $color-subtle;
+
+    dd {
+      font-size: 14px;
+      overflow-wrap: anywhere;
+    }
+  }
+}
+
+.comparison {
+  margin-top: $space-md;
+  padding: 12px 14px;
+  border-radius: $radius;
+  background: $color-subtle;
+
+  &__title {
+    font-size: 12px;
+    color: $color-muted;
+  }
+
+  &__main {
+    margin: 2px 0 0;
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  &__rate {
+    margin-left: $space-xs;
+    font-size: 13px;
+  }
+
+  &__note {
+    margin: 2px 0 0;
+    font-size: 12px;
+    color: $color-muted;
+  }
+
+  // 지출 증가 = 빨강, 감소 = 파랑 (화살표와 문구로도 구분)
+  &.is-up strong,
+  &.is-up .comparison__rate {
+    color: $color-expense;
+  }
+
+  &.is-down strong,
+  &.is-down .comparison__rate {
+    color: $color-income;
+  }
+}
+
+.donut {
+  position: relative;
+  flex-shrink: 0;
+  width: 180px;
+  height: 180px;
+
+  &__svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  &__track {
+    fill: none;
+    stroke: $color-subtle;
+  }
+
+  &__arc {
+    fill: none;
+    cursor: pointer;
+    transition:
+      opacity 0.15s,
+      stroke-width 0.15s;
+
+    &.is-dimmed {
+      opacity: 0.3;
+    }
+  }
+
+  &__center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    text-align: center;
+  }
+
+  &__label {
+    font-size: 12px;
+    color: $color-muted;
+  }
+
+  &__value {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+
+    &--total {
+      font-size: 15px;
+    }
+  }
+
+  &__sub {
+    font-size: 12px;
+    color: $color-muted;
+  }
+}
+
+.category-summary {
+  display: flex;
+  align-items: flex-start;
+  gap: 28px;
+
+  &__list {
+    flex: 1;
+    min-width: 0;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: $space-sm;
+    padding: 8px 10px;
+    margin: 0 -10px;
+    border-radius: $radius;
+    transition: background 0.15s;
+
+    &.is-active {
+      background: $color-subtle;
+    }
+  }
+
+  &__delta {
+    display: block;
+    margin-top: 2px;
+    font-size: 11px;
+    color: $color-muted;
+
+    &.is-up {
+      color: $color-expense;
+    }
+
+    &.is-down {
+      color: $color-income;
+    }
+  }
+
+  @include mobile {
+    flex-direction: column;
+    align-items: center;
+
+    &__list {
+      width: 100%;
+    }
+  }
+
+  &__body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+
+  &__value {
+    font-weight: 600;
+
+    small {
+      color: $color-muted;
+      font-weight: 400;
+    }
+  }
+
+  &__bar {
+    height: 6px;
+    border-radius: 999px;
+    background: $color-subtle;
+    overflow: hidden;
+  }
+
+  &__fill {
+    height: 100%;
+    border-radius: inherit;
+    background: $color-expense;
+  }
+}
+
+// 사람별 합산 표, 저축 표 공통
+.user-table,
+.savings-summary__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+
+  th,
+  td {
+    padding: 8px 4px;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  thead th {
+    padding-top: 0;
+    font-size: 11px;
+    font-weight: 600;
+    color: $color-muted;
+  }
+
+  thead th:first-child,
+  tbody th,
+  tfoot th {
+    text-align: left;
+    font-weight: 600;
+  }
+
+  tbody tr + tr {
+    border-top: 1px solid $color-border;
+  }
+
+  td {
+    font-weight: 600;
+  }
+}
+
+.user-table {
+  tbody tr.is-active {
+    background: $color-subtle;
+  }
+
+  // 최종합산 행
+  tfoot tr {
+    border-top: 1.5px solid $color-text;
+
+    th,
+    td {
+      padding-top: 10px;
+      font-weight: 800;
+    }
+  }
+}
+
+.savings-summary {
+  &__stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: $space-sm;
+    margin-bottom: $space-md;
+  }
+
+  &__table {
+    td.is-zero {
+      color: $color-muted;
+      font-weight: 400;
+    }
+  }
+
+  &__name {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+// 최근 3개월 평균
+.avg-summary {
+  &__range {
+    margin: -8px 0 $space-md;
+    font-size: 12px;
+    color: $color-muted;
+  }
+
+  &__compare {
+    display: block;
+    margin-top: 2px;
+    font-size: 11px;
+    color: $color-muted;
+  }
+}
+
+.avg-diff {
+  color: $color-muted;
+  font-weight: 600;
+
+  &.is-bad {
+    color: $color-expense;
+  }
+
+  &.is-good {
+    color: $color-income;
+  }
+}
+
+.avg-table {
+  .avg-table__group th {
+    padding: 14px 4px 4px;
+    font-size: 11px;
+    font-weight: 700;
+    color: $color-muted;
+    text-align: left;
+  }
+
+  // 그룹 제목 바로 아래 줄은 구분선 없이
+  .avg-table__group + tr {
+    border-top: none;
+  }
+
+  td {
+    font-size: 12px;
+  }
+}
