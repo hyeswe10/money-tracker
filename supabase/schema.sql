@@ -14,7 +14,8 @@ create table if not exists public.members (
 
 insert into public.members (id, name, color) values
   ('jungwoo', '정우', '#5a5fe8'),
-  ('kyeju',   '계주', '#e8780c')
+  ('kyeju',   '계주', '#e8780c'),
+  ('shared',  '공용', '#1098ad')   -- 로그인 계정 아님 (email 없음)
 on conflict (id) do nothing;
 
 -- =========================================================

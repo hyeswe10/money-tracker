@@ -1,6 +1,7 @@
 export const USERS = [
   { id: 'jungwoo', name: '정우', color: '#5a5fe8' },
   { id: 'kyeju', name: '계주', color: '#e8780c' },
+  { id: 'shared', name: '공용', color: '#1098ad' }, // 두 사람이 같이 쓰는 돈 (로그인 계정 아님)
 ];
 
 // 보기 필터에서 '전체'를 뜻하는 값

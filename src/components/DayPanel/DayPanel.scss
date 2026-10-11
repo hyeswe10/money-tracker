@@ -169,9 +169,11 @@
   gap: 12px;
 
   // 작성자 선택
+  // 사람 수만큼 같은 너비로 (정우 / 계주 / 공용)
   &__users {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
     gap: $space-sm;
   }
 
