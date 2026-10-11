@@ -10,6 +10,7 @@ import AverageSummary from './components/Summary/AverageSummary';
 import { useLedgerData } from './hooks/useLedgerData';
 import RecurringPanel from './components/Recurring/RecurringPanel';
 import SubscriptionsPage from './components/Subscriptions/SubscriptionsPage';
+import CoupayCard from './components/Coupay/CoupayCard';
 import { useHashRoute } from './hooks/useHashRoute';
 import { ALL_USERS, DEFAULT_USER_ID, USERS, getUser } from './constants/users';
 import { addMonth, getDaysInMonth, getPreviousMonths, getTodayKey, toDateKey, toMonthKey } from './utils/calendar';
@@ -130,7 +131,7 @@ const Ledger = ({ session, memberId, onSignOut }) => {
   const dailyTotals = useMemo(
     () =>
       visible.reduce((acc, t) => {
-        const entry = acc[t.date] ?? { income: 0, expense: 0, saving: 0 };
+        const entry = acc[t.date] ?? { income: 0, expense: 0, saving: 0, transfer: 0 };
         entry[t.type] += t.amount;
         acc[t.date] = entry;
         return acc;
@@ -257,6 +258,16 @@ const Ledger = ({ session, memberId, onSignOut }) => {
                 onAddRule={addRule}
                 onUpdate={updateTransaction}
                 onDelete={deleteTransaction}
+              />
+            </div>
+            {/* 쿠페이머니는 집 전체 지갑 하나 → 보기 필터와 관계없이 전체 내역으로 계산 */}
+            <div className="app__coupay">
+              <CoupayCard
+                transactions={transactions}
+                month={month}
+                monthKey={monthKey}
+                defaultUser={defaultUser}
+                onAdd={handleAdd}
               />
             </div>
             <div className="app__recurring">

@@ -10,7 +10,7 @@ import '../DayPanel/DayPanel.scss';
 import '../Summary/Summary.scss';
 import './RecurringPanel.scss';
 
-const SIGNS = { income: '+', expense: '-', saving: '' };
+const SIGNS = { income: '+', expense: '-', saving: '', transfer: '+' };
 
 const startLabel = (monthKey) => {
   const [y, m] = monthKey.split('-').map(Number);

@@ -206,6 +206,10 @@
     &--2 {
       grid-template-columns: repeat(2, 1fr);
     }
+
+    &--4 {
+      grid-template-columns: repeat(4, 1fr);
+    }
   }
 
   &__type {
@@ -234,6 +238,10 @@
 
     &--saving.is-active {
       color: $color-saving;
+    }
+
+    &--transfer.is-active {
+      color: $color-coupay;
     }
   }
 
@@ -372,4 +380,10 @@
 .tx-item__tag--sub {
   background: #fff0f6;
   color: #c2255c;
+}
+
+// 쿠페이머니에서 차감되는 쿠팡 지출 태그
+.tx-item__tag--coupay {
+  background: rgba($color-coupay, 0.1);
+  color: $color-coupay;
 }

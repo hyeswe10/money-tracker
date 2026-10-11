@@ -4,7 +4,8 @@ import { CATEGORIES, TRANSACTION_TYPES, TYPE_LABELS } from '../../constants/cate
 import { USERS } from '../../constants/users';
 import CategoryIcon from '../CategoryIcon/CategoryIcon';
 
-const TYPES = [TRANSACTION_TYPES.EXPENSE, TRANSACTION_TYPES.INCOME, TRANSACTION_TYPES.SAVING];
+const TYPES = [TRANSACTION_TYPES.EXPENSE, TRANSACTION_TYPES.INCOME, TRANSACTION_TYPES.SAVING, TRANSACTION_TYPES.TRANSFER];
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const DAYS = Array.from({ length: 31 }, (_, i) => i + 1);
 const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
 const MONTH_KEY_RE = /^(19|[2-9]\d)\d{2}-(0[1-9]|1[0-2])$/;
@@ -23,7 +24,8 @@ const EMPTY_FORM = {
 };
 
 // initial: 수정할 내역 또는 고정 항목 규칙. scheduleDefaults: 새 고정 항목의 기본값
-const toFormState = (initial, defaultUser, scheduleDefaults = {}) => {
+// fixedType: 유형을 고정 (쿠페이머니 카드의 충전 폼). defaultDate: 날짜 입력 기본값
+const toFormState = (initial, defaultUser, scheduleDefaults = {}, fixedType, defaultDate) => {
   const schedule = {
     dayOfMonth: String(initial?.dayOfMonth ?? scheduleDefaults.dayOfMonth ?? 1),
     startMonth: initial?.startMonth ?? scheduleDefaults.startMonth ?? '',
@@ -31,7 +33,9 @@ const toFormState = (initial, defaultUser, scheduleDefaults = {}) => {
     monthOfYear: String(initial?.monthOfYear ?? scheduleDefaults.monthOfYear ?? 1),
     isSubscription: initial?.isSubscription ?? scheduleDefaults.isSubscription ?? false,
     repeat: 'none',
+    date: initial?.date ?? defaultDate ?? '',
   };
+  const fixed = fixedType ? { type: fixedType, category: CATEGORIES[fixedType][0] } : {};
   return initial
     ? {
         type: initial.type,
@@ -41,7 +45,7 @@ const toFormState = (initial, defaultUser, scheduleDefaults = {}) => {
         user: initial.user,
         ...schedule,
       }
-    : { ...EMPTY_FORM, user: defaultUser, ...schedule };
+    : { ...EMPTY_FORM, ...fixed, user: defaultUser, ...schedule };
 };
 
 // 작은 세그먼트 버튼 묶음 (지출/수입/저축, 매월/매년, 반복 여부)
@@ -63,6 +67,7 @@ const Segment = ({ options, value, onChange, label }) => (
 );
 
 // schedule: 고정 항목 편집 모드 (주기, 날짜, 시작 월, 정기구독)
+// fixedType + withDate: 유형·카테고리를 고정하고 날짜를 직접 입력 (쿠페이머니 충전)
 // allowRepeat: 일반 입력에서 '반복' 선택 표시. repeatDay/repeatMonth는 선택한 날짜의 일/월
 const TransactionForm = ({
   initial,
@@ -72,16 +77,22 @@ const TransactionForm = ({
   allowRepeat = false,
   repeatDay,
   repeatMonth,
+  fixedType,
+  withDate = false,
+  defaultDate,
+  submitLabel,
   onSubmit,
   onCancel,
 }) => {
-  const [form, setForm] = useState(() => toFormState(initial, defaultUser, scheduleDefaults));
+  const [form, setForm] = useState(() => toFormState(initial, defaultUser, scheduleDefaults, fixedType, defaultDate));
   const [error, setError] = useState('');
 
   const isEdit = Boolean(initial);
-  const showCancel = isEdit || schedule;
-  const isRepeating = allowRepeat && !isEdit && form.repeat !== 'none';
   const brand = detectBrand(form.memo);
+  const showCancel = isEdit || schedule || Boolean(fixedType);
+  const isTransfer = form.type === TRANSACTION_TYPES.TRANSFER;
+  const usesCoupay = form.type === TRANSACTION_TYPES.EXPENSE && brand?.id === 'coupang';
+  const isRepeating = allowRepeat && !isEdit && form.repeat !== 'none';
   const set = (patch) => setForm((prev) => ({ ...prev, ...patch }));
 
   const handleTypeChange = (type) => set({ type, category: CATEGORIES[type][0] });
@@ -102,6 +113,10 @@ const TransactionForm = ({
       setError('카테고리를 선택해주세요.');
       return;
     }
+    if (withDate && !DATE_RE.test(form.date)) {
+      setError('날짜를 입력해주세요.');
+      return;
+    }
     if (schedule && !MONTH_KEY_RE.test(form.startMonth)) {
       setError('시작 월을 YYYY-MM 형식으로 입력해주세요.');
       return;
@@ -117,7 +132,7 @@ const TransactionForm = ({
         }
       : {};
     const repeatData = isRepeating ? { repeat: form.repeat, isSubscription: form.isSubscription } : {};
-    onSubmit({ ...base, ...scheduleData, ...repeatData });
+    onSubmit({ ...base, ...scheduleData, ...repeatData, ...(withDate ? { date: form.date } : {}) });
     setError('');
     if (!isEdit) set({ amount: '', memo: '', repeat: 'none', isSubscription: false });
   };
@@ -154,12 +169,24 @@ const TransactionForm = ({
         </div>
       </div>
 
-      <Segment
-        label="유형"
-        options={TYPES.map((t) => ({ id: t, label: TYPE_LABELS[t] }))}
-        value={form.type}
-        onChange={handleTypeChange}
-      />
+      {withDate && (
+        <label className="tx-form__field">
+          <span>날짜</span>
+          <input type="date" name="date" value={form.date} onChange={handleChange} />
+        </label>
+      )}
+
+      {!fixedType && (
+        <Segment
+          label="유형"
+          options={TYPES.map((t) => ({ id: t, label: TYPE_LABELS[t] }))}
+          value={form.type}
+          onChange={handleTypeChange}
+        />
+      )}
+      {isTransfer && (
+        <p className="tx-form__hint">쿠페이머니 잔액에 더해집니다. 수입·지출 합계에는 들어가지 않아요.</p>
+      )}
 
       <label className="tx-form__field">
         <span>금액</span>
@@ -173,24 +200,26 @@ const TransactionForm = ({
         />
       </label>
 
-      <div className="tx-form__field">
-        <span>카테고리</span>
-        <div className="tx-form__categories" role="radiogroup" aria-label="카테고리">
-          {CATEGORIES[form.type].map((c) => (
-            <button
-              key={c}
-              type="button"
-              role="radio"
-              aria-checked={form.category === c}
-              className={`tx-form__category${form.category === c ? ' is-active' : ''}`}
-              onClick={() => set({ category: c })}
-            >
-              <CategoryIcon category={c} size="sm" />
-              <span>{c}</span>
-            </button>
-          ))}
+      {!fixedType && !isTransfer && (
+        <div className="tx-form__field">
+          <span>카테고리</span>
+          <div className="tx-form__categories" role="radiogroup" aria-label="카테고리">
+            {CATEGORIES[form.type].map((c) => (
+              <button
+                key={c}
+                type="button"
+                role="radio"
+                aria-checked={form.category === c}
+                className={`tx-form__category${form.category === c ? ' is-active' : ''}`}
+                onClick={() => set({ category: c })}
+              >
+                <CategoryIcon category={c} size="sm" />
+                <span>{c}</span>
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       <label className="tx-form__field">
         <span>{schedule ? '이름' : '메모'}</span>
@@ -206,6 +235,7 @@ const TransactionForm = ({
         <p className="tx-form__brand">
           <CategoryIcon category={form.category} memo={form.memo} size="sm" />
           {brand.name} 아이콘으로 표시됩니다
+          {usesCoupay && ' · 쿠페이머니에서 차감돼요'}
         </p>
       )}
 
@@ -246,7 +276,7 @@ const TransactionForm = ({
           {Number(form.dayOfMonth) > 28 && (
             <p className="tx-form__hint">{form.dayOfMonth}일이 없는 달에는 그 달 말일에 나갑니다.</p>
           )}
-          {subscriptionCheck}
+          {!isTransfer && subscriptionCheck}
         </>
       )}
 
@@ -256,7 +286,7 @@ const TransactionForm = ({
           <Segment label="반복" options={REPEATS} value={form.repeat} onChange={(id) => set({ repeat: id })} />
         </div>
       )}
-      {isRepeating && subscriptionCheck}
+      {isRepeating && !isTransfer && subscriptionCheck}
 
       {error && <p className="tx-form__error">{error}</p>}
 
@@ -267,7 +297,7 @@ const TransactionForm = ({
           </button>
         )}
         <button type="submit" className="btn btn--primary">
-          {isEdit ? '수정' : isRepeating ? '고정 항목으로 추가' : '추가'}
+          {submitLabel ?? (isEdit ? '수정' : isRepeating ? '고정 항목으로 추가' : isTransfer ? '충전' : '추가')}
         </button>
       </div>
     </form>

@@ -108,24 +108,28 @@
       order: 2;
     }
 
-    &__monthly {
+    &__coupay {
       order: 3;
     }
 
-    &__recurring {
+    &__monthly {
       order: 4;
     }
 
-    &__average {
+    &__recurring {
       order: 5;
     }
 
-    &__category {
+    &__average {
       order: 6;
     }
 
-    &__savings {
+    &__category {
       order: 7;
+    }
+
+    &__savings {
+      order: 8;
     }
   }
 

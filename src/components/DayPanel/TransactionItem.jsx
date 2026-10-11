@@ -1,9 +1,10 @@
+import { isCoupayUse } from '../../utils/coupay';
 import { formatAmount } from '../../utils/format';
 import CategoryIcon from '../CategoryIcon/CategoryIcon';
 import UserBadge from '../UserBadge/UserBadge';
 
-// 저축은 나가는 돈이지만 쌓이는 돈이라 부호 없이 표시
-const SIGNS = { income: '+', expense: '-', saving: '' };
+// 저축은 나가는 돈이지만 쌓이는 돈이라 부호 없이 표시, 충전은 쿠페이머니에 +
+const SIGNS = { income: '+', expense: '-', saving: '', transfer: '+' };
 
 const TransactionItem = ({ transaction, isUpcoming, isEditing, onEdit, onDelete }) => {
   const { id, type, amount, category, memo, user, recurringId, planned } = transaction;
@@ -19,6 +20,7 @@ const TransactionItem = ({ transaction, isUpcoming, isEditing, onEdit, onDelete 
           <span className="tx-item__category">{category}</span>
           <UserBadge userId={user} />
           {recurringId && <span className="tx-item__tag">고정</span>}
+          {isCoupayUse(transaction) && <span className="tx-item__tag tx-item__tag--coupay">쿠페이 차감</span>}
           {isUpcoming && <span className="tx-item__tag tx-item__tag--upcoming">예정</span>}
         </span>
         {memo && <span className="tx-item__memo">{memo}</span>}

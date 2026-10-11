@@ -2,13 +2,17 @@ export const TRANSACTION_TYPES = {
   EXPENSE: 'expense',
   INCOME: 'income',
   SAVING: 'saving', // 적금·청약처럼 나가지만 모이는 돈. 지출 합계와 별도로 계산
+  TRANSFER: 'transfer', // 쿠페이머니 충전: 돈을 옮기는 것이라 수입·지출·저축 합계에 넣지 않음
 };
 
 export const TYPE_LABELS = {
   expense: '지출',
   income: '수입',
   saving: '저축',
+  transfer: '충전',
 };
+
+export const COUPAY_CHARGE = '쿠페이머니 충전';
 
 export const CATEGORIES = {
   income: ['급여', '용돈', '부수입', '이자', '기타수입'],
@@ -31,6 +35,7 @@ export const CATEGORIES = {
     '기타지출',
   ],
   saving: ['적금', '청약', '예금', '투자', '기타저축'],
+  transfer: [COUPAY_CHARGE],
 };
 
 // 카테고리별 아이콘(components/CategoryIcon/icons.jsx의 키)과 색상
@@ -58,6 +63,7 @@ export const CATEGORY_META = {
   데이트: { icon: 'heart', color: '#d6336c' },
   친구: { icon: 'users', color: '#4dabf7' },
   '차 유지비': { icon: 'car', color: '#0b7285' },
+  [COUPAY_CHARGE]: { icon: 'wallet', color: '#346aff' },
   적금: { icon: 'piggyBank', color: '#12a37f' },
   청약: { icon: 'building', color: '#0095c8' },
   예금: { icon: 'landmark', color: '#4a3aa7' },
