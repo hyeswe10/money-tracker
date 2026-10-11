@@ -12,7 +12,7 @@ const TransactionItem = ({ transaction, isUpcoming, isEditing, onEdit, onDelete 
   return (
     <li className={classNames}>
       <span className="tx-item__icon">
-        <CategoryIcon category={category} />
+        <CategoryIcon category={category} memo={memo} />
       </span>
       <div className="tx-item__info">
         <span className="tx-item__title">

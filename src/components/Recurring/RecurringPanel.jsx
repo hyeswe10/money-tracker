@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { TYPE_LABELS } from '../../constants/categories';
 import { getTodayKey } from '../../utils/calendar';
 import { formatAmount } from '../../utils/format';
+import { scheduleLabel } from '../../utils/recurring';
 import CategoryIcon from '../CategoryIcon/CategoryIcon';
 import UserBadge from '../UserBadge/UserBadge';
 import TransactionForm from '../DayPanel/TransactionForm';
@@ -16,15 +17,19 @@ const startLabel = (monthKey) => {
   return `${y}년 ${m}월부터`;
 };
 
-// 통신비·보험료·구독료처럼 매달 같은 날 나가는 항목 관리
+// 통신비·보험료·구독료처럼 매달(또는 매년) 같은 날 나가는 항목 관리
 const RecurringPanel = ({ rules, viewLabel, defaultUser, onAdd, onUpdate, onDelete }) => {
   const [mode, setMode] = useState(null); // null | 'new' | 수정 중인 규칙 id
   const editing = rules.find((r) => r.id === mode);
   const todayKey = getTodayKey();
 
+  // 매달 합계는 매월 항목만, 연 결제는 따로
+  const monthlyRules = rules.filter((r) => r.frequency !== 'yearly');
+  const yearlyRules = rules.filter((r) => r.frequency === 'yearly');
   const totals = ['expense', 'income', 'saving']
-    .map((type) => ({ type, sum: rules.filter((r) => r.type === type).reduce((s, r) => s + r.amount, 0) }))
+    .map((type) => ({ type, sum: monthlyRules.filter((r) => r.type === type).reduce((s, r) => s + r.amount, 0) }))
     .filter((t) => t.sum > 0);
+  const yearlyTotal = yearlyRules.reduce((s, r) => s + r.amount, 0);
 
   const handleSubmit = (data) => {
     if (editing) onUpdate(editing.id, data);
@@ -66,10 +71,15 @@ const RecurringPanel = ({ rules, viewLabel, defaultUser, onAdd, onUpdate, onDele
           ))}
         </p>
       )}
+      {yearlyRules.length > 0 && (
+        <p className="recurring__totals">
+          연 결제 {yearlyRules.length}건 · 1년 <strong>{formatAmount(yearlyTotal)}</strong>
+        </p>
+      )}
 
       {rules.length === 0 && mode === null && (
         <p className="summary-card__empty">
-          통신비, 보험료, OTT 구독료처럼 매달 같은 날 나가는 항목을 등록하면 매달 자동으로 기록됩니다.
+          통신비, 보험료, OTT 구독료처럼 매달(또는 매년) 같은 날 나가는 항목을 등록하면 자동으로 기록됩니다.
         </p>
       )}
 
@@ -78,15 +88,17 @@ const RecurringPanel = ({ rules, viewLabel, defaultUser, onAdd, onUpdate, onDele
           {rules.map((rule) => (
             <li key={rule.id} className={`tx-item${mode === rule.id ? ' is-editing' : ''}`}>
               <span className="tx-item__icon">
-                <CategoryIcon category={rule.category} />
+                <CategoryIcon category={rule.category} memo={rule.memo} />
               </span>
               <div className="tx-item__info">
                 <span className="tx-item__title">
                   <span className="tx-item__category">{rule.memo || rule.category}</span>
                   <UserBadge userId={rule.user} />
+                  {rule.isSubscription && <span className="tx-item__tag tx-item__tag--sub">구독</span>}
+                  {rule.frequency === 'yearly' && <span className="tx-item__tag">연</span>}
                 </span>
                 <span className="tx-item__memo">
-                  매월 {rule.dayOfMonth}일 · {rule.category} · {startLabel(rule.startMonth)}
+                  {scheduleLabel(rule)} · {rule.category} · {startLabel(rule.startMonth)}
                 </span>
               </div>
               <span className={`tx-item__amount ${rule.type}`}>
@@ -111,7 +123,7 @@ const RecurringPanel = ({ rules, viewLabel, defaultUser, onAdd, onUpdate, onDele
           <h3 className="day-panel__form-title">{editing ? '고정 항목 수정' : '고정 항목 추가'}</h3>
           {editing && (
             <p className="tx-form__hint recurring__hint">
-              수정 내용은 아직 날짜가 안 된 내역과 앞으로 생길 내역에 반영됩니다. 날짜(매월 며칠) 변경은 다음 달부터
+              수정 내용은 아직 날짜가 안 된 내역과 앞으로 생길 내역에 반영됩니다. 날짜·주기 변경은 다음 결제부터
               적용됩니다.
             </p>
           )}

@@ -12,7 +12,12 @@ const ChevronIcon = ({ direction }) => (
   </svg>
 );
 
-const Header = ({ year, month, onMove, onChange, onToday }) => {
+const PAGES = [
+  { id: 'ledger', label: '가계부' },
+  { id: 'subscriptions', label: '정기구독' },
+];
+
+const Header = ({ page, year, month, onMove, onChange, onToday }) => {
   // 입력 중에는 임시값만 바꾸고, Enter/포커스 해제 시 반영
   const [yearDraft, setYearDraft] = useState(String(year));
 
@@ -44,45 +49,60 @@ const Header = ({ year, month, onMove, onChange, onToday }) => {
         </span>
         <h1 className="header__title">만년 가계부</h1>
       </div>
-      <div className="header__nav">
-        <div className="header__pill">
-          <button type="button" className="header__arrow" onClick={() => onMove(-1)} aria-label="이전 달">
-            <ChevronIcon direction="left" />
-          </button>
-          <div className="header__current">
-            <input
-              type="number"
-              className="header__year"
-              value={yearDraft}
-              min={MIN_YEAR}
-              max={MAX_YEAR}
-              onChange={(e) => setYearDraft(e.target.value)}
-              onBlur={commitYear}
-              onKeyDown={handleYearKeyDown}
-              aria-label="연도"
-            />
-            <span>년</span>
-            <select
-              className="header__month"
-              value={month}
-              onChange={(e) => onChange(year, Number(e.target.value))}
-              aria-label="월"
-            >
-              {MONTHS.map((m) => (
-                <option key={m} value={m}>
-                  {m + 1}월
-                </option>
-              ))}
-            </select>
+      <nav className="header__tabs" aria-label="메뉴">
+        {PAGES.map((p) => (
+          <a
+            key={p.id}
+            href={`#/${p.id}`}
+            className={`header__tab${page === p.id ? ' is-active' : ''}`}
+            aria-current={page === p.id ? 'page' : undefined}
+          >
+            {p.label}
+          </a>
+        ))}
+      </nav>
+      {/* 월 이동은 가계부 화면에서만 */}
+      {page === 'ledger' && (
+        <div className="header__nav">
+          <div className="header__pill">
+            <button type="button" className="header__arrow" onClick={() => onMove(-1)} aria-label="이전 달">
+              <ChevronIcon direction="left" />
+            </button>
+            <div className="header__current">
+              <input
+                type="number"
+                className="header__year"
+                value={yearDraft}
+                min={MIN_YEAR}
+                max={MAX_YEAR}
+                onChange={(e) => setYearDraft(e.target.value)}
+                onBlur={commitYear}
+                onKeyDown={handleYearKeyDown}
+                aria-label="연도"
+              />
+              <span>년</span>
+              <select
+                className="header__month"
+                value={month}
+                onChange={(e) => onChange(year, Number(e.target.value))}
+                aria-label="월"
+              >
+                {MONTHS.map((m) => (
+                  <option key={m} value={m}>
+                    {m + 1}월
+                  </option>
+                ))}
+              </select>
+            </div>
+            <button type="button" className="header__arrow" onClick={() => onMove(1)} aria-label="다음 달">
+              <ChevronIcon direction="right" />
+            </button>
           </div>
-          <button type="button" className="header__arrow" onClick={() => onMove(1)} aria-label="다음 달">
-            <ChevronIcon direction="right" />
+          <button type="button" className="header__today" onClick={onToday}>
+            오늘
           </button>
         </div>
-        <button type="button" className="header__today" onClick={onToday}>
-          오늘
-        </button>
-      </div>
+      )}
     </header>
   );
 };

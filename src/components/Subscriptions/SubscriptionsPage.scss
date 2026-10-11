@@ -1,0 +1,54 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+.subs {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  gap: $space-md;
+  align-items: start;
+
+  @include tablet {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  // 사람별 구독 수·월 금액
+  &__people {
+    list-style: none;
+    margin: $space-md 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border-radius: $radius;
+      background: $color-subtle;
+      font-size: 13px;
+      color: $color-text-soft;
+    }
+
+    strong {
+      color: $color-text;
+    }
+  }
+
+  &__list {
+    margin-bottom: 0;
+  }
+
+  &__dday {
+    margin-left: 2px;
+    color: $color-primary;
+  }
+
+  &__monthly {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    color: $color-muted;
+  }
+}

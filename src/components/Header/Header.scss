@@ -38,6 +38,37 @@
     letter-spacing: -0.03em;
   }
 
+  // 가계부 / 정기구독 메뉴
+  &__tabs {
+    display: flex;
+    gap: 2px;
+    padding: 4px;
+    margin-right: auto;
+    border-radius: 999px;
+    background: $color-surface;
+    box-shadow: $shadow;
+  }
+
+  &__tab {
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-weight: 700;
+    color: $color-muted;
+    text-decoration: none;
+    transition:
+      background 0.15s,
+      color 0.15s;
+
+    &:hover {
+      color: $color-text;
+    }
+
+    &.is-active {
+      background: $color-primary;
+      color: #fff;
+    }
+  }
+
   &__nav {
     display: flex;
     align-items: center;

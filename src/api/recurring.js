@@ -12,6 +12,9 @@ export const fromRuleRow = (row) => ({
   user: row.author,
   dayOfMonth: row.day_of_month,
   startMonth: row.start_month.slice(0, 7),
+  isSubscription: Boolean(row.is_subscription),
+  frequency: row.frequency ?? 'monthly', // 'monthly' | 'yearly'
+  monthOfYear: row.month_of_year ?? null, // yearly일 때 1~12
   createdAt: new Date(row.created_at).getTime(),
 });
 
@@ -24,6 +27,11 @@ const toRuleRow = (data) => {
   if (data.user !== undefined) row.author = data.user;
   if (data.dayOfMonth !== undefined) row.day_of_month = data.dayOfMonth;
   if (data.startMonth !== undefined) row.start_month = `${data.startMonth}-01`;
+  if (data.isSubscription !== undefined) row.is_subscription = data.isSubscription;
+  if (data.frequency !== undefined) {
+    row.frequency = data.frequency;
+    row.month_of_year = data.frequency === 'yearly' ? data.monthOfYear : null;
+  }
   return row;
 };
 

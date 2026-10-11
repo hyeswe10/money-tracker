@@ -13,14 +13,21 @@ const DayPanel = ({ date, transactions, defaultUser, onAdd, onAddRule, onUpdate,
   const editing = transactions.find((t) => t.id === editingId);
   const todayKey = getTodayKey();
   const day = Number(date.slice(8, 10));
+  const monthOfYear = Number(date.slice(5, 7));
 
   const handleSubmit = ({ repeat, ...data }) => {
     if (editing) {
       onUpdate(editing.id, data);
       setEditingId(null);
     } else if (repeat) {
-      // 이 날짜를 기준으로 매달 반복되는 고정 항목 등록 → 이번 달 내역은 자동 생성
-      onAddRule({ ...data, dayOfMonth: day, startMonth: date.slice(0, 7) });
+      // 이 날짜를 기준으로 매월/매년 반복되는 고정 항목 등록 → 이번 달 내역은 자동 생성
+      onAddRule({
+        ...data,
+        dayOfMonth: day,
+        startMonth: date.slice(0, 7),
+        frequency: repeat,
+        monthOfYear: repeat === 'yearly' ? monthOfYear : null,
+      });
     } else {
       onAdd({ ...data, date });
     }
@@ -71,7 +78,8 @@ const DayPanel = ({ date, transactions, defaultUser, onAdd, onAddRule, onUpdate,
         initial={editing}
         defaultUser={defaultUser}
         allowRepeat
-        repeatHint={`매월 ${day}일`}
+        repeatDay={day}
+        repeatMonth={monthOfYear}
         onSubmit={handleSubmit}
         onCancel={() => setEditingId(null)}
       />

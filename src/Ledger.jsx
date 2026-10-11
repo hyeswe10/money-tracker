@@ -9,6 +9,8 @@ import SavingsSummary from './components/Summary/SavingsSummary';
 import AverageSummary from './components/Summary/AverageSummary';
 import { useLedgerData } from './hooks/useLedgerData';
 import RecurringPanel from './components/Recurring/RecurringPanel';
+import SubscriptionsPage from './components/Subscriptions/SubscriptionsPage';
+import { useHashRoute } from './hooks/useHashRoute';
 import { ALL_USERS, DEFAULT_USER_ID, USERS, getUser } from './constants/users';
 import { addMonth, getDaysInMonth, getPreviousMonths, getTodayKey, toDateKey, toMonthKey } from './utils/calendar';
 import { buildPlannedRows } from './utils/recurring';
@@ -66,6 +68,7 @@ const Ledger = ({ session, memberId, onSignOut }) => {
     savePrefs(prefs);
   }, [prefs]);
 
+  const page = useHashRoute('ledger') === 'subscriptions' ? 'subscriptions' : 'ledger';
   const { year, month } = view;
   const { userFilter, lastUser } = prefs;
   const monthKey = toMonthKey(year, month);
@@ -157,7 +160,7 @@ const Ledger = ({ session, memberId, onSignOut }) => {
 
   return (
     <div className="app">
-      <Header year={year} month={month} onMove={handleMove} onChange={changeView} onToday={handleToday} />
+      <Header page={page} year={year} month={month} onMove={handleMove} onChange={changeView} onToday={handleToday} />
       <div className="app__toolbar">
         <UserFilter value={userFilter} onChange={(id) => setPrefs((p) => ({ ...p, userFilter: id }))} />
         <div className="app__account">
@@ -199,76 +202,87 @@ const Ledger = ({ session, memberId, onSignOut }) => {
         </div>
       )}
       {/* 넓은 화면: 왼쪽(달력+카테고리+3개월 평균+저축) / 오른쪽(날짜 패널+월 합계), 좁은 화면: order로 한 줄 정렬 */}
-      <main className="app__main">
-        <div className="app__col">
-          <div className="app__calendar">
-            <Calendar
-              year={year}
-              month={month}
-              selectedDate={selectedDate}
-              dailyTotals={dailyTotals}
-              onSelect={handleSelect}
-            />
+      {page === 'subscriptions' ? (
+        <SubscriptionsPage
+          rules={visibleRules}
+          viewLabel={viewLabel}
+          defaultUser={defaultUser}
+          onAdd={addRule}
+          onUpdate={updateRule}
+          onDelete={deleteRule}
+        />
+      ) : (
+        <main className="app__main">
+          <div className="app__col">
+            <div className="app__calendar">
+              <Calendar
+                year={year}
+                month={month}
+                selectedDate={selectedDate}
+                dailyTotals={dailyTotals}
+                onSelect={handleSelect}
+              />
+            </div>
+            <div className="app__category">
+              <CategorySummary
+                key={`${monthKey}-${userFilter}`}
+                items={monthly.categories}
+                total={monthly.expense}
+                prevByCategory={prevMonthly.byCategory}
+                viewLabel={viewLabel}
+              />
+            </div>
+            <div className="app__average">
+              <AverageSummary year={year} months={avgMonths} viewLabel={viewLabel} average={average} current={monthly} />
+            </div>
+            <div className="app__savings">
+              <SavingsSummary
+                year={year}
+                month={month}
+                viewLabel={viewLabel}
+                monthTotal={monthly.saving}
+                monthByCategory={monthly.savingByCategory}
+                cumulative={savingTotal}
+              />
+            </div>
           </div>
-          <div className="app__category">
-            <CategorySummary
-              key={`${monthKey}-${userFilter}`}
-              items={monthly.categories}
-              total={monthly.expense}
-              prevByCategory={prevMonthly.byCategory}
-              viewLabel={viewLabel}
-            />
+          <div className="app__col">
+            <div className="app__day">
+              <DayPanel
+                key={`${selectedDate}-${userFilter}`}
+                date={selectedDate}
+                transactions={dayTransactions}
+                defaultUser={defaultUser}
+                onAdd={handleAdd}
+                onAddRule={addRule}
+                onUpdate={updateTransaction}
+                onDelete={deleteTransaction}
+              />
+            </div>
+            <div className="app__recurring">
+              <RecurringPanel
+                rules={visibleRules}
+                viewLabel={viewLabel}
+                defaultUser={defaultUser}
+                onAdd={addRule}
+                onUpdate={updateRule}
+                onDelete={deleteRule}
+              />
+            </div>
+            <div className="app__monthly">
+              <MonthlySummary
+                month={month}
+                prevMonth={prev.month}
+                viewLabel={viewLabel}
+                totals={monthly}
+                userSummary={userSummary}
+                activeUser={userFilter}
+                prevExpense={prevMonthly.expense}
+              />
+            </div>
           </div>
-          <div className="app__average">
-            <AverageSummary year={year} months={avgMonths} viewLabel={viewLabel} average={average} current={monthly} />
-          </div>
-          <div className="app__savings">
-            <SavingsSummary
-              year={year}
-              month={month}
-              viewLabel={viewLabel}
-              monthTotal={monthly.saving}
-              monthByCategory={monthly.savingByCategory}
-              cumulative={savingTotal}
-            />
-          </div>
-        </div>
-        <div className="app__col">
-          <div className="app__day">
-            <DayPanel
-              key={`${selectedDate}-${userFilter}`}
-              date={selectedDate}
-              transactions={dayTransactions}
-              defaultUser={defaultUser}
-              onAdd={handleAdd}
-              onAddRule={addRule}
-              onUpdate={updateTransaction}
-              onDelete={deleteTransaction}
-            />
-          </div>
-          <div className="app__recurring">
-            <RecurringPanel
-              rules={visibleRules}
-              viewLabel={viewLabel}
-              defaultUser={defaultUser}
-              onAdd={addRule}
-              onUpdate={updateRule}
-              onDelete={deleteRule}
-            />
-          </div>
-          <div className="app__monthly">
-            <MonthlySummary
-              month={month}
-              prevMonth={prev.month}
-              viewLabel={viewLabel}
-              totals={monthly}
-              userSummary={userSummary}
-              activeUser={userFilter}
-              prevExpense={prevMonthly.expense}
-            />
-          </div>
-        </div>
-      </main>
+        </main>
+      )}
     </div>
   );
 };

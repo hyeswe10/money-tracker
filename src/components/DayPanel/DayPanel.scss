@@ -200,6 +200,10 @@
     padding: 4px;
     border-radius: $radius;
     background: $color-subtle;
+
+    &--2 {
+      grid-template-columns: repeat(2, 1fr);
+    }
   }
 
   &__type {
@@ -215,6 +219,7 @@
     &.is-active {
       background: $color-surface;
       box-shadow: 0 1px 3px rgba(16, 24, 40, 0.1);
+      color: $color-text;
     }
 
     &--expense.is-active {
@@ -299,6 +304,26 @@
     display: grid;
     grid-template-columns: 1fr 1.4fr;
     gap: $space-sm;
+
+    &--3 {
+      grid-template-columns: 1fr 1fr 1.4fr;
+    }
+  }
+
+  // 메모에서 서비스 이름을 알아봤을 때 미리보기
+  &__brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: -6px 0 0;
+    font-size: 12px;
+    color: $color-text-soft;
+  }
+
+  &__repeat-hint {
+    margin-left: 6px;
+    font-weight: 500;
+    color: $color-primary;
   }
 
   &__hint {
@@ -340,3 +365,9 @@
   }
 }
 
+
+// 정기구독 태그
+.tx-item__tag--sub {
+  background: #fff0f6;
+  color: #c2255c;
+}
