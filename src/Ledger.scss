@@ -83,57 +83,34 @@
     align-items: start;
   }
 
-  &__col {
+  // 통계 탭: 두 열을 같은 너비로
+  &__main--even {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  &__col,
+  &__stack {
     display: flex;
     flex-direction: column;
     gap: $space-md;
     min-width: 0;
   }
 
+  // 카드 하나만 있는 탭 (쿠페이)
+  &__single {
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
   @include tablet {
-    &__main {
+    &__main,
+    &__main--even {
       grid-template-columns: minmax(0, 1fr);
-    }
-
-    // 두 열을 풀어서 달력 → 날짜 패널 → 월 합계 → 카테고리 순으로
-    &__col {
-      display: contents;
-    }
-
-    &__calendar {
-      order: 1;
-    }
-
-    &__day {
-      order: 2;
-    }
-
-    &__coupay {
-      order: 3;
-    }
-
-    &__monthly {
-      order: 4;
-    }
-
-    &__recurring {
-      order: 5;
-    }
-
-    &__average {
-      order: 6;
-    }
-
-    &__category {
-      order: 7;
-    }
-
-    &__savings {
-      order: 8;
     }
   }
 
   @include mobile {
-    padding: $space-md $space-sm;
+    // 아래 고정 탭 바에 마지막 카드가 가리지 않도록
+    padding: $space-md $space-sm calc(84px + env(safe-area-inset-bottom));
   }
 }

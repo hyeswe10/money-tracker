@@ -78,6 +78,7 @@ const DayPanel = ({ date, transactions, defaultUser, onAdd, onAddRule, onUpdate,
         initial={editing}
         defaultUser={defaultUser}
         allowRepeat
+        withDate={Boolean(editing)}
         repeatDay={day}
         repeatMonth={monthOfYear}
         onSubmit={handleSubmit}

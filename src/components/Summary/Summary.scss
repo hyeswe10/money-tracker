@@ -53,16 +53,6 @@
     letter-spacing: -0.02em;
   }
 
-  &__balance {
-    margin-bottom: $space-md;
-
-    dd {
-      font-size: 28px;
-      font-weight: 800;
-      line-height: 1.2;
-    }
-  }
-
   &__tiles {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));

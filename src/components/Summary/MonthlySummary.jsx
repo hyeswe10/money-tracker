@@ -74,10 +74,9 @@ const UserTable = ({ rows, total, activeUser }) => (
   </table>
 );
 
-const MonthlySummary = ({ month, prevMonth, viewLabel, totals, userSummary, activeUser, prevExpense }) => {
+// compact: 가계부 탭에서는 수입/지출/저축 합계만 (사람별 표·지난달 비교는 통계 탭)
+const MonthlySummary = ({ month, prevMonth, viewLabel, totals, userSummary, activeUser, prevExpense, compact = false }) => {
   const { income, expense, saving } = totals;
-  // 저축은 지출과 따로 보지만, 남은 돈 계산에서는 빠져나간 돈으로 친다
-  const balance = income - expense - saving;
 
   return (
     <section className="summary-card">
@@ -85,13 +84,6 @@ const MonthlySummary = ({ month, prevMonth, viewLabel, totals, userSummary, acti
         {month + 1}월 합계 <span className="summary-card__scope">{viewLabel}</span>
       </h2>
       <dl className="monthly-summary">
-        <div className="monthly-summary__balance">
-          <dt>남은 돈 (수입 − 지출 − 저축)</dt>
-          <dd className={balance < 0 ? 'expense' : ''}>
-            {balance < 0 ? '-' : ''}
-            {formatAmount(Math.abs(balance))}
-          </dd>
-        </div>
         <div className="monthly-summary__tiles">
           <div className="monthly-summary__tile">
             <dt>수입</dt>
@@ -108,10 +100,14 @@ const MonthlySummary = ({ month, prevMonth, viewLabel, totals, userSummary, acti
         </div>
       </dl>
 
-      <h3 className="summary-card__subtitle">사람별 · 최종합산</h3>
-      <UserTable rows={userSummary.rows} total={userSummary.total} activeUser={activeUser} />
+      {!compact && (
+        <>
+          <h3 className="summary-card__subtitle">사람별 · 최종합산</h3>
+          <UserTable rows={userSummary.rows} total={userSummary.total} activeUser={activeUser} />
 
-      <ExpenseComparison expense={expense} prevExpense={prevExpense} prevMonth={prevMonth} />
+          <ExpenseComparison expense={expense} prevExpense={prevExpense} prevMonth={prevMonth} />
+        </>
+      )}
     </section>
   );
 };

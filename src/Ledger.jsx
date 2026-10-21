@@ -12,6 +12,7 @@ import RecurringPanel from './components/Recurring/RecurringPanel';
 import SubscriptionsPage from './components/Subscriptions/SubscriptionsPage';
 import CoupayCard from './components/Coupay/CoupayCard';
 import { useHashRoute } from './hooks/useHashRoute';
+import { DEFAULT_PAGE, resolvePage } from './constants/pages';
 import { ALL_USERS, DEFAULT_USER_ID, USERS, getUser } from './constants/users';
 import { addMonth, getDaysInMonth, getPreviousMonths, getTodayKey, toDateKey, toMonthKey } from './utils/calendar';
 import { buildPlannedRows } from './utils/recurring';
@@ -36,6 +37,7 @@ const Ledger = ({ session, memberId, onSignOut }) => {
       userFilter: saved.userFilter === ALL_USERS || isValidUser(saved.userFilter) ? saved.userFilter : ALL_USERS,
       lastUser: isValidUser(saved.lastUser) ? saved.lastUser : DEFAULT_USER_ID,
       localImportDone: Boolean(saved.localImportDone),
+      lastPage: saved.lastPage,
     };
   });
   const {
@@ -69,7 +71,14 @@ const Ledger = ({ session, memberId, onSignOut }) => {
     savePrefs(prefs);
   }, [prefs]);
 
-  const page = useHashRoute('ledger') === 'subscriptions' ? 'subscriptions' : 'ledger';
+  // 주소에 탭이 없으면(앱 첫 실행) 마지막으로 보던 탭
+  const route = useHashRoute('');
+  const page = resolvePage(route) ?? resolvePage(prefs.lastPage) ?? DEFAULT_PAGE;
+
+  useEffect(() => {
+    setPrefs((p) => (p.lastPage === page ? p : { ...p, lastPage: page }));
+    window.scrollTo(0, 0);
+  }, [page]);
   const { year, month } = view;
   const { userFilter, lastUser } = prefs;
   const monthKey = toMonthKey(year, month);
@@ -202,96 +211,98 @@ const Ledger = ({ session, memberId, onSignOut }) => {
           </div>
         </div>
       )}
-      {/* 넓은 화면: 왼쪽(달력+카테고리+3개월 평균+저축) / 오른쪽(날짜 패널+월 합계), 좁은 화면: order로 한 줄 정렬 */}
-      {page === 'subscriptions' ? (
-        <SubscriptionsPage
-          rules={visibleRules}
-          viewLabel={viewLabel}
-          defaultUser={defaultUser}
-          onAdd={addRule}
-          onUpdate={updateRule}
-          onDelete={deleteRule}
-        />
-      ) : (
+      {page === 'ledger' && (
         <main className="app__main">
           <div className="app__col">
-            <div className="app__calendar">
-              <Calendar
-                year={year}
-                month={month}
-                selectedDate={selectedDate}
-                dailyTotals={dailyTotals}
-                onSelect={handleSelect}
-              />
-            </div>
-            <div className="app__category">
-              <CategorySummary
-                key={`${monthKey}-${userFilter}`}
-                items={monthly.categories}
-                total={monthly.expense}
-                prevByCategory={prevMonthly.byCategory}
-                viewLabel={viewLabel}
-              />
-            </div>
-            <div className="app__average">
-              <AverageSummary year={year} months={avgMonths} viewLabel={viewLabel} average={average} current={monthly} />
-            </div>
-            <div className="app__savings">
-              <SavingsSummary
-                year={year}
-                month={month}
-                viewLabel={viewLabel}
-                monthTotal={monthly.saving}
-                monthByCategory={monthly.savingByCategory}
-                cumulative={savingTotal}
-              />
-            </div>
+            <Calendar
+              year={year}
+              month={month}
+              selectedDate={selectedDate}
+              dailyTotals={dailyTotals}
+              onSelect={handleSelect}
+            />
           </div>
           <div className="app__col">
-            <div className="app__day">
-              <DayPanel
-                key={`${selectedDate}-${userFilter}`}
-                date={selectedDate}
-                transactions={dayTransactions}
-                defaultUser={defaultUser}
-                onAdd={handleAdd}
-                onAddRule={addRule}
-                onUpdate={updateTransaction}
-                onDelete={deleteTransaction}
-              />
-            </div>
-            {/* 쿠페이머니는 집 전체 지갑 하나 → 보기 필터와 관계없이 전체 내역으로 계산 */}
-            <div className="app__coupay">
-              <CoupayCard
-                transactions={transactions}
-                month={month}
-                monthKey={monthKey}
-                defaultUser={defaultUser}
-                onAdd={handleAdd}
-              />
-            </div>
-            <div className="app__recurring">
-              <RecurringPanel
-                rules={visibleRules}
-                viewLabel={viewLabel}
-                defaultUser={defaultUser}
-                onAdd={addRule}
-                onUpdate={updateRule}
-                onDelete={deleteRule}
-              />
-            </div>
-            <div className="app__monthly">
-              <MonthlySummary
-                month={month}
-                prevMonth={prev.month}
-                viewLabel={viewLabel}
-                totals={monthly}
-                userSummary={userSummary}
-                activeUser={userFilter}
-                prevExpense={prevMonthly.expense}
-              />
-            </div>
+            <DayPanel
+              key={`${selectedDate}-${userFilter}`}
+              date={selectedDate}
+              transactions={dayTransactions}
+              defaultUser={defaultUser}
+              onAdd={handleAdd}
+              onAddRule={addRule}
+              onUpdate={updateTransaction}
+              onDelete={deleteTransaction}
+            />
+            <MonthlySummary month={month} viewLabel={viewLabel} totals={monthly} compact />
           </div>
+        </main>
+      )}
+
+      {page === 'stats' && (
+        <main className="app__main app__main--even">
+          <div className="app__col">
+            <MonthlySummary
+              month={month}
+              prevMonth={prev.month}
+              viewLabel={viewLabel}
+              totals={monthly}
+              userSummary={userSummary}
+              activeUser={userFilter}
+              prevExpense={prevMonthly.expense}
+            />
+            <CategorySummary
+              key={`${monthKey}-${userFilter}`}
+              items={monthly.categories}
+              total={monthly.expense}
+              prevByCategory={prevMonthly.byCategory}
+              viewLabel={viewLabel}
+            />
+          </div>
+          <div className="app__col">
+            <AverageSummary year={year} months={avgMonths} viewLabel={viewLabel} average={average} current={monthly} />
+            <SavingsSummary
+              year={year}
+              month={month}
+              viewLabel={viewLabel}
+              monthTotal={monthly.saving}
+              monthByCategory={monthly.savingByCategory}
+              cumulative={savingTotal}
+            />
+          </div>
+        </main>
+      )}
+
+      {page === 'fixed' && (
+        <main className="app__stack">
+          <RecurringPanel
+            rules={visibleRules}
+            viewLabel={viewLabel}
+            defaultUser={defaultUser}
+            onAdd={addRule}
+            onUpdate={updateRule}
+            onDelete={deleteRule}
+          />
+          <SubscriptionsPage
+            rules={visibleRules}
+            viewLabel={viewLabel}
+            defaultUser={defaultUser}
+            onAdd={addRule}
+            onUpdate={updateRule}
+            onDelete={deleteRule}
+          />
+        </main>
+      )}
+
+      {/* 쿠페이머니는 집 전체 지갑 하나 → 보기 필터와 관계없이 전체 내역으로 계산 */}
+      {page === 'coupay' && (
+        <main className="app__single">
+          <CoupayCard
+            transactions={transactions}
+            month={month}
+            monthKey={monthKey}
+            defaultUser={defaultUser}
+            onAdd={handleAdd}
+          />
         </main>
       )}
     </div>
