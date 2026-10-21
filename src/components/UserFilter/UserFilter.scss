@@ -23,20 +23,18 @@
       background 0.15s,
       color 0.15s;
 
+    // 사람 이름은 그 사람 색으로
+    &.has-color {
+      color: color-mix(in srgb, var(--user-color) 70%, #000);
+    }
+
     &:hover {
-      color: $color-text;
+      background: $color-subtle;
     }
 
     &.is-active {
       background: $color-text;
       color: #fff;
     }
-  }
-
-  &__dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--user-color);
   }
 }

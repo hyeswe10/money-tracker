@@ -1,0 +1,65 @@
+// 가계부별 디자인 토큰. <html data-theme="..."> 는 빌드할 때 vite.config.js 에서 넣는다 (src/config/households.js 의 id)
+// 글꼴(Gowun Dodum / Gowun Batang)은 index.html 에서 불러온다
+
+// 우리 집 '코튼캔디': 연핑크(계주) + 연블루(정우), 동글동글한 제목
+:root,
+[data-theme='home'] {
+  --font-display: 'Gowun Dodum', 'Pretendard Variable', Pretendard, sans-serif;
+  --font-display-weight: 400;
+  --app-zoom: 1;
+
+  --color-bg: #fbf8fa;
+  --color-subtle: #f7f3f6;
+  --color-border: #f0e9ee;
+  --color-text: #2b2f3e;
+  --color-text-soft: #4b5163;
+  --color-muted: #6b7083;
+
+  --color-primary: #2f62b5;
+  --color-primary-soft: #edf3fe;
+  --color-accent: #b4466f;
+  --color-accent-soft: #fdeef3;
+  --color-fill: #f7c6d6;
+  --color-on-fill: #5c1f38;
+  --shadow-fill: 0 4px 14px rgba(236, 143, 177, 0.3);
+
+  --radius-card: 24px;
+  --shadow-card: 0 1px 2px rgba(43, 47, 62, 0.04), 0 8px 24px rgba(180, 70, 111, 0.06);
+
+  // 폰 하단 탭: 화면에서 살짝 떠 있는 둥근 바
+  --tabbar-inset: 16px;
+  --tabbar-radius: 24px;
+  --tab-active-bg: #fdeef3;
+  --tab-active-color: #8f2f55;
+}
+
+// 엄마 '라벤더 다이어리': 연한 바이올렛, 명조 제목, 전체적으로 큼직하게
+[data-theme='mom'] {
+  --font-display: 'Gowun Batang', serif;
+  --font-display-weight: 700;
+  --app-zoom: 1.12; // 글씨·버튼을 한 번에 키운다
+
+  --color-bg: #f8f6fc;
+  --color-subtle: #f5f2fb;
+  --color-border: #ece8f4;
+  --color-text: #2a2638;
+  --color-text-soft: #4b4560;
+  --color-muted: #6a6480;
+
+  --color-primary: #5e45ad;
+  --color-primary-soft: #f3effd;
+  --color-accent: #6a4fb8;
+  --color-accent-soft: #ece6fb;
+  --color-fill: #ddd2f8;
+  --color-on-fill: #3b2a78;
+  --shadow-fill: 0 4px 14px rgba(138, 114, 214, 0.25);
+
+  --radius-card: 28px;
+  --shadow-card: 0 1px 2px rgba(42, 38, 56, 0.04), 0 8px 24px rgba(94, 69, 173, 0.05);
+
+  // 폰 하단 탭: 화면 아래에 붙은 넓은 바
+  --tabbar-inset: 0px;
+  --tabbar-radius: 0px;
+  --tab-active-bg: #ece6fb;
+  --tab-active-color: #47338a;
+}

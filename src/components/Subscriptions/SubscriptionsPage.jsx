@@ -131,19 +131,19 @@ const SubscriptionsPage = ({ rules, viewLabel, defaultUser, onAdd, onUpdate, onD
                   <CategoryIcon category={rule.category} memo={rule.memo} />
                 </span>
                 <div className="tx-item__info">
-                  <span className="tx-item__title">
-                    <span className="tx-item__category">{rule.memo || rule.category}</span>
+                  <span className="tx-item__title">{rule.memo || rule.category}</span>
+                  <span className="tx-item__meta">
                     <UserBadge userId={rule.user} />
                     {rule.frequency === 'yearly' && <span className="tx-item__tag">연</span>}
-                  </span>
-                  <span className="tx-item__memo">
-                    {scheduleLabel(rule)}
-                    {rule.next && (
-                      <>
-                        {' · '}
-                        다음 결제 {dateLabel(rule.next)} <strong className="subs__dday">{dDay(rule.next, todayKey)}</strong>
-                      </>
-                    )}
+                    <span>
+                      {scheduleLabel(rule)}
+                      {rule.next && (
+                        <>
+                          {' · '}
+                          다음 결제 {dateLabel(rule.next)} <strong className="subs__dday">{dDay(rule.next, todayKey)}</strong>
+                        </>
+                      )}
+                    </span>
                   </span>
                 </div>
                 <span className={`tx-item__amount ${rule.type}`}>

@@ -19,7 +19,7 @@
     color: $color-primary;
 
     &:hover {
-      background: color-mix(in srgb, #{$color-primary} 16%, transparent);
+      background: color-mix(in srgb, #{$color-primary} 18%, transparent);
     }
   }
 

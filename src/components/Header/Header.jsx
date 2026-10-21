@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { PAGES } from '../../constants/pages';
-import { HOUSEHOLD } from '../../constants/users';
+import { HOUSEHOLD, USERS } from '../../constants/users';
+import { WEEKDAYS, getTodayKey } from '../../utils/calendar';
 import './Header.scss';
 
 const MONTHS = Array.from({ length: 12 }, (_, i) => i);
@@ -39,7 +40,20 @@ const TAB_ICONS = {
   ),
 };
 
+// 헤더 오른쪽 동그라미 (로그인하는 사람들)
+const AVATAR_USERS = USERS.filter((u) => u.avatar);
+
+// '정우 · 계주의 10월' 또는 '10월 21일 수요일'
+const getSubtitle = (month) => {
+  if (HOUSEHOLD.headerSubtitle === 'today') {
+    const [y, m, d] = getTodayKey().split('-').map(Number);
+    return `${m}월 ${d}일 ${WEEKDAYS[new Date(y, m - 1, d).getDay()]}요일`;
+  }
+  return `${AVATAR_USERS.map((u) => u.name).join(' · ')}의 ${month + 1}월`;
+};
+
 const Header = ({ page, year, month, onMove, onChange, onToday }) => {
+  const subtitle = getSubtitle(month);
   // 입력 중에는 임시값만 바꾸고, Enter/포커스 해제 시 반영
   const [yearDraft, setYearDraft] = useState(String(year));
 
@@ -63,14 +77,18 @@ const Header = ({ page, year, month, onMove, onChange, onToday }) => {
   return (
     <header className="header">
       <div className="header__brand">
-        <span className="header__logo" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2" />
-            <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" />
-          </svg>
-        </span>
+        <span className="header__eyebrow">{subtitle}</span>
         <h1 className="header__title">{HOUSEHOLD.name}</h1>
       </div>
+      {AVATAR_USERS.length > 0 && (
+        <div className="header__avatars" aria-hidden="true">
+          {AVATAR_USERS.map((u) => (
+            <span key={u.id} className="header__avatar" style={{ '--user-color': u.color }}>
+              {u.name.slice(0, 1)}
+            </span>
+          ))}
+        </div>
+      )}
       <nav className="header__tabs" aria-label="메뉴">
         {PAGES.map((p) => (
           <a

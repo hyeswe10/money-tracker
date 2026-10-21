@@ -15,15 +15,16 @@ const TransactionItem = ({ transaction, isUpcoming, isEditing, onEdit, onDelete 
       <span className="tx-item__icon">
         <CategoryIcon category={category} memo={memo} />
       </span>
+      {/* 메모가 있으면 메모를 크게, 카테고리·작성자·태그는 아래 작은 줄로 */}
       <div className="tx-item__info">
-        <span className="tx-item__title">
-          <span className="tx-item__category">{category}</span>
+        <span className="tx-item__title">{memo || category}</span>
+        <span className="tx-item__meta">
+          {memo && <span className="tx-item__category">{category}</span>}
           <UserBadge userId={user} />
           {recurringId && <span className="tx-item__tag">고정</span>}
           {isCoupayUse(transaction) && <span className="tx-item__tag tx-item__tag--coupay">쿠페이 차감</span>}
           {isUpcoming && <span className="tx-item__tag tx-item__tag--upcoming">예정</span>}
         </span>
-        {memo && <span className="tx-item__memo">{memo}</span>}
       </div>
       <span className={`tx-item__amount ${type}`}>
         {SIGNS[type]}

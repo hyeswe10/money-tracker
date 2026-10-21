@@ -26,8 +26,9 @@
 
 @mixin card-title {
   margin: 0 0 $space-md;
-  font-size: 15px;
-  font-weight: 700;
+  font-family: $font-display;
+  font-size: 17px;
+  font-weight: var(--font-display-weight);
   letter-spacing: -0.01em;
 }
 

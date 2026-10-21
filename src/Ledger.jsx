@@ -141,8 +141,10 @@ const Ledger = ({ session, memberId, onSignOut }) => {
   const dailyTotals = useMemo(
     () =>
       visible.reduce((acc, t) => {
-        const entry = acc[t.date] ?? { income: 0, expense: 0, saving: 0, transfer: 0 };
+        const entry = acc[t.date] ?? { income: 0, expense: 0, saving: 0, transfer: 0, spenders: [] };
         entry[t.type] += t.amount;
+        // 달력에 '누가 썼는지' 색 점으로 표시
+        if (t.type === 'expense' && !entry.spenders.includes(t.user)) entry.spenders.push(t.user);
         acc[t.date] = entry;
         return acc;
       }, {}),
@@ -219,6 +221,15 @@ const Ledger = ({ session, memberId, onSignOut }) => {
       {page === 'ledger' && (
         <main className="app__main">
           <div className="app__col">
+            <MonthlySummary
+              month={month}
+              isCurrent={monthKey === todayMonthKey}
+              viewLabel={viewLabel}
+              totals={monthly}
+              userSummary={userSummary}
+              prevExpense={prevMonthly.expense}
+              compact
+            />
             <Calendar
               year={year}
               month={month}
@@ -238,7 +249,6 @@ const Ledger = ({ session, memberId, onSignOut }) => {
               onUpdate={updateTransaction}
               onDelete={deleteTransaction}
             />
-            <MonthlySummary month={month} viewLabel={viewLabel} totals={monthly} compact />
           </div>
         </main>
       )}
@@ -249,6 +259,7 @@ const Ledger = ({ session, memberId, onSignOut }) => {
             <MonthlySummary
               month={month}
               prevMonth={prev.month}
+              isCurrent={monthKey === todayMonthKey}
               viewLabel={viewLabel}
               totals={monthly}
               userSummary={userSummary}

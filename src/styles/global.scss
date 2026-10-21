@@ -1,6 +1,6 @@
-@use 'sass:color';
 @use 'variables' as *;
 @use 'mixins' as *;
+@use 'themes';
 
 *,
 *::before,
@@ -83,12 +83,12 @@ select {
   }
 
   &--primary {
-    background: $color-primary;
-    color: #fff;
-    box-shadow: 0 4px 12px rgba($color-primary, 0.25);
+    background: $color-fill;
+    color: $color-on-fill;
+    box-shadow: $shadow-fill;
 
     &:hover {
-      background: color.adjust($color-primary, $lightness: -5%);
+      filter: brightness(0.97);
     }
   }
 

@@ -91,14 +91,14 @@ const RecurringPanel = ({ rules, viewLabel, defaultUser, onAdd, onUpdate, onDele
                 <CategoryIcon category={rule.category} memo={rule.memo} />
               </span>
               <div className="tx-item__info">
-                <span className="tx-item__title">
-                  <span className="tx-item__category">{rule.memo || rule.category}</span>
+                <span className="tx-item__title">{rule.memo || rule.category}</span>
+                <span className="tx-item__meta">
                   <UserBadge userId={rule.user} />
                   {rule.isSubscription && <span className="tx-item__tag tx-item__tag--sub">구독</span>}
                   {rule.frequency === 'yearly' && <span className="tx-item__tag">연</span>}
-                </span>
-                <span className="tx-item__memo">
-                  {scheduleLabel(rule)} · {rule.category} · {startLabel(rule.startMonth)}
+                  <span>
+                    {scheduleLabel(rule)} · {rule.category} · {startLabel(rule.startMonth)}
+                  </span>
                 </span>
               </div>
               <span className={`tx-item__amount ${rule.type}`}>

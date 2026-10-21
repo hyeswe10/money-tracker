@@ -52,8 +52,14 @@ const CategorySummary = ({ items, total, prevByCategory, viewLabel }) => {
   return (
     <section className="summary-card">
       <h2 className="summary-card__title">
-          카테고리별 지출 <span className="summary-card__scope">{viewLabel}</span>
-        </h2>
+        카테고리별 지출 <span className="summary-card__scope">{viewLabel}</span>
+      </h2>
+      <p className="category-summary__top">
+        가장 많이 쓴 곳 <strong>{items[0].category}</strong>
+        <span>
+          {((items[0].amount / total) * 100).toFixed(0)}% · {formatAmount(items[0].amount)}
+        </span>
+      </p>
       <div className="category-summary">
         <DonutChart segments={segments} total={total} activeKey={activeKey} onActiveChange={setActiveKey} />
         <ul className="category-summary__list" onMouseLeave={() => setActiveKey(null)}>

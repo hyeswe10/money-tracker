@@ -65,14 +65,200 @@
 
   &__tile {
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
     padding: 10px 12px;
-    border-radius: $radius;
+    border-radius: 16px;
     background: $color-subtle;
 
     dd {
-      font-size: 14px;
+      font-size: 15px;
+      font-weight: 800;
       overflow-wrap: anywhere;
     }
+
+    // 수입·지출·저축 칸은 각자 색 배경 + 색 글씨 라벨
+    &--income {
+      background: $tint-income;
+
+      dt {
+        color: $color-income;
+      }
+    }
+
+    &--expense {
+      background: $tint-expense;
+
+      dt {
+        color: $color-expense;
+      }
+    }
+
+    &--saving {
+      background: $tint-saving;
+
+      dt {
+        color: $color-saving;
+      }
+    }
+
+    &--income dt,
+    &--expense dt,
+    &--saving dt {
+      font-weight: 700;
+    }
+  }
+}
+
+// 지출 나눠보기: 사람별 지출 비율 막대
+.expense-split {
+  margin-top: 14px;
+
+  &__labels {
+    display: flex;
+    justify-content: space-between;
+    gap: $space-sm;
+    margin-bottom: 6px;
+    font-size: 11px;
+    font-weight: 700;
+
+    span {
+      color: color-mix(in srgb, var(--user-color) 70%, #000);
+    }
+  }
+
+  &__bar {
+    display: flex;
+    gap: 3px;
+    height: 8px;
+
+    span {
+      min-width: 6px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--user-color) 60%, #fff);
+    }
+  }
+}
+
+// 엄마: 쓴 돈 크게
+.summary-card--hero {
+  background: $color-accent-soft;
+  box-shadow: none;
+}
+
+.money-hero {
+  display: flex;
+  flex-direction: column;
+
+  &__label {
+    font-size: 15px;
+    font-weight: 700;
+    color: $color-primary;
+  }
+
+  &__amount {
+    font-size: 34px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+
+    small {
+      margin-left: 2px;
+      font-size: 20px;
+      font-weight: 700;
+    }
+  }
+
+  &__compare {
+    font-size: 14px;
+    color: $color-text-soft;
+  }
+
+  &__tiles {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin: 14px 0 0;
+
+    > div {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: 12px 14px;
+      border-radius: 18px;
+      background: $color-surface;
+    }
+
+    dt {
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    dd {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 800;
+    }
+  }
+}
+
+// 사람별 카드 (정우 블루 / 계주 핑크 / 공용)
+.user-cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+
+  &__item {
+    padding: 14px;
+    border-radius: 20px;
+    background: color-mix(in srgb, var(--user-color) 12%, #fff);
+    box-shadow: inset 0 0 0 1.5px transparent;
+
+    &.is-active {
+      box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--user-color) 60%, #fff);
+    }
+
+    dl {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin: 8px 0 0;
+
+      > div {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        color: color-mix(in srgb, var(--user-color) 35%, #333);
+      }
+    }
+
+    dd {
+      margin: 0;
+      font-weight: 800;
+    }
+  }
+
+  &__name {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 800;
+    color: color-mix(in srgb, var(--user-color) 60%, #000);
+  }
+
+  &__avatar {
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--user-color) 35%, #fff);
+    font-size: 11px;
   }
 }
 
@@ -178,6 +364,27 @@
 }
 
 .category-summary {
+  &__top {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 4px 8px;
+    margin: -6px 0 $space-md;
+    font-size: 13px;
+    color: $color-text-soft;
+
+    strong {
+      font-family: $font-display;
+      font-size: 20px;
+      font-weight: var(--font-display-weight);
+      color: $color-primary;
+    }
+
+    span {
+      color: $color-muted;
+    }
+  }
+
   display: flex;
   align-items: flex-start;
   gap: 28px;
@@ -267,7 +474,6 @@
 }
 
 // 사람별 합산 표, 저축 표 공통
-.user-table,
 .savings-summary__table {
   width: 100%;
   border-collapse: collapse;
@@ -300,23 +506,6 @@
 
   td {
     font-weight: 600;
-  }
-}
-
-.user-table {
-  tbody tr.is-active {
-    background: $color-subtle;
-  }
-
-  // 최종합산 행
-  tfoot tr {
-    border-top: 1.5px solid $color-text;
-
-    th,
-    td {
-      padding-top: 10px;
-      font-weight: 800;
-    }
   }
 }
 

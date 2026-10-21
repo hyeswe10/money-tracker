@@ -1,10 +1,15 @@
 <!doctype html>
-<html lang="ko">
+<html lang="ko" data-theme="{{THEME}}">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>{{APP_NAME}}</title>
     <meta name="description" content="{{APP_DESCRIPTION}}" />
+
+    <!-- 제목 글꼴: 우리 집 = 고운돋움, 엄마 = 고운바탕 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&family=Gowun+Dodum&display=swap" rel="stylesheet" />
 
     <!-- 아이콘 -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -12,7 +17,7 @@
 
     <!-- 홈 화면에 추가 (Android/Chrome) -->
     <link rel="manifest" href="./manifest.webmanifest" />
-    <meta name="theme-color" content="#f3f4f8" />
+    <meta name="theme-color" content="{{THEME_COLOR}}" />
 
     <!-- 홈 화면에 추가 (iPhone/Safari) -->
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />

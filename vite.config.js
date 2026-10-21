@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { getHousehold } from './src/config/households.js';
+import { getHousehold, getHouseholdId } from './src/config/households.js';
 
 const REPO_BASE = '/money-tracker/';
 
@@ -13,8 +13,8 @@ const toManifest = (household) => ({
   start_url: './',
   scope: './',
   display: 'standalone',
-  background_color: '#f3f4f8',
-  theme_color: '#f3f4f8',
+  background_color: household.themeColor,
+  theme_color: household.themeColor,
   icons: [
     { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
     { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
@@ -22,8 +22,8 @@ const toManifest = (household) => ({
   ],
 });
 
-// index.html의 {{APP_NAME}} 등을 채우고 manifest.webmanifest를 만든다
-const householdPlugin = (household) => {
+// index.html의 {{APP_NAME}}, {{THEME}} 등을 채우고 manifest.webmanifest를 만든다
+const householdPlugin = (id, household) => {
   const manifest = JSON.stringify(toManifest(household), null, 2);
   return {
     name: 'household',
@@ -31,7 +31,9 @@ const householdPlugin = (household) => {
       html
         .replaceAll('{{APP_NAME}}', household.name)
         .replaceAll('{{APP_SHORT_NAME}}', household.shortName)
-        .replaceAll('{{APP_DESCRIPTION}}', household.description),
+        .replaceAll('{{APP_DESCRIPTION}}', household.description)
+        .replaceAll('{{THEME}}', id)
+        .replaceAll('{{THEME_COLOR}}', household.themeColor),
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
         if (!req.url?.endsWith('/manifest.webmanifest')) return next();
@@ -50,9 +52,10 @@ const householdPlugin = (household) => {
 // 우리 집 가계부는 /money-tracker/, 엄마 가계부(--mode mom)는 /money-tracker/mom/ 에 배포
 export default defineConfig(({ command, mode, isPreview }) => {
   const household = getHousehold(mode);
+  const id = getHouseholdId(mode);
   return {
     base: command === 'build' || isPreview ? REPO_BASE + household.path : '/',
     build: { outDir: `dist/${household.path}` },
-    plugins: [react(), householdPlugin(household)],
+    plugins: [react(), householdPlugin(id, household)],
   };
 });

@@ -5,6 +5,7 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: $space-lg;
+  zoom: var(--app-zoom); // 엄마 가계부는 전체를 조금 크게
 
   &__toolbar {
     display: flex;
@@ -111,6 +112,6 @@
 
   @include mobile {
     // 아래 고정 탭 바에 마지막 카드가 가리지 않도록
-    padding: $space-md $space-sm calc(84px + env(safe-area-inset-bottom));
+    padding: 20px $space-md calc(104px + env(safe-area-inset-bottom));
   }
 }

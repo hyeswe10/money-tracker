@@ -1,19 +1,33 @@
 // 색상
-$color-bg: #f3f4f8;
+// 가계부마다 다른 값은 CSS 변수 (값은 _themes.scss: 우리 집 = 코튼캔디, 엄마 = 라벤더 다이어리)
+$color-bg: var(--color-bg);
 $color-surface: #ffffff;
-$color-subtle: #f6f7fa; // 카드 안의 입력칸, 보조 영역
-$color-border: #eceef3;
-$color-text: #1d2130;
-$color-text-soft: #4b5163;
-$color-muted: #9097a8;
-$color-primary: #5a5fe8;
-$color-primary-soft: #eff0fe;
-$color-income: #2a78d6;
-$color-expense: #e34948;
-$color-saving: #12a37f;
+$color-subtle: var(--color-subtle); // 카드 안의 입력칸, 보조 영역
+$color-border: var(--color-border);
+$color-text: var(--color-text);
+$color-text-soft: var(--color-text-soft);
+$color-muted: var(--color-muted);
+$color-primary: var(--color-primary); // 글자·테두리용 포인트 색 (흰 배경에서도 잘 읽히는 진한 톤)
+$color-primary-soft: var(--color-primary-soft);
+$color-accent: var(--color-accent); // 두 번째 포인트 색
+$color-accent-soft: var(--color-accent-soft);
+$color-fill: var(--color-fill); // 버튼·활성 탭·오늘 날짜 채우기 (파스텔)
+$color-on-fill: var(--color-on-fill); // 채운 배경 위 글자
+$shadow-fill: var(--shadow-fill);
+$color-income: #2f62b5;
+$color-expense: #c8435f;
+$color-saving: #1d7a5d;
 $color-coupay: #346aff; // 쿠페이머니 충전
-$color-sunday: #e34948;
-$color-saturday: #2a78d6;
+$color-sunday: #c8435f;
+$color-saturday: #2f62b5;
+
+// 금액 칸 배경 (수입·지출·저축)
+$tint-income: #edf3fe;
+$tint-expense: #fdeef3;
+$tint-saving: #eaf6f1;
+
+// 글꼴: 제목은 가계부마다 다른 글꼴, 본문은 Pretendard
+$font-display: var(--font-display);
 
 // 간격 / 모양
 $space-xs: 4px;
@@ -21,12 +35,10 @@ $space-sm: 8px;
 $space-md: 16px;
 $space-lg: 24px;
 $space-xl: 32px;
-$radius-lg: 20px; // 카드
+$radius-lg: var(--radius-card); // 카드
 $radius: 12px; // 입력칸, 버튼
 $radius-sm: 8px;
-$shadow:
-  0 1px 2px rgba(16, 24, 40, 0.04),
-  0 6px 24px rgba(16, 24, 40, 0.05);
+$shadow: var(--shadow-card);
 
 // 브레이크포인트
 $bp-tablet: 900px;

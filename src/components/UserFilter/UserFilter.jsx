@@ -12,11 +12,10 @@ const UserFilter = ({ value, onChange }) => (
         type="button"
         role="radio"
         aria-checked={value === id}
-        className={`user-filter__option${value === id ? ' is-active' : ''}`}
+        className={`user-filter__option${color ? ' has-color' : ''}${value === id ? ' is-active' : ''}`}
         style={color ? { '--user-color': color } : undefined}
         onClick={() => onChange(id)}
       >
-        {color && <span className="user-filter__dot" />}
         {name}
       </button>
     ))}

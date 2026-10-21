@@ -15,6 +15,7 @@
     width: 100%;
     max-width: 360px;
     padding: $space-xl $space-lg;
+    zoom: var(--app-zoom);
   }
 
   &__logo {
@@ -24,9 +25,9 @@
     height: 48px;
     margin: 0 auto;
     border-radius: 14px;
-    background: $color-primary;
-    color: #fff;
-    box-shadow: 0 6px 16px rgba($color-primary, 0.3);
+    background: $color-fill;
+    color: $color-on-fill;
+    box-shadow: $shadow-fill;
 
     svg {
       width: 26px;
@@ -37,9 +38,10 @@
   &__title {
     margin: 0;
     text-align: center;
-    font-size: 22px;
-    font-weight: 800;
-    letter-spacing: -0.03em;
+    font-family: $font-display;
+    font-size: 24px;
+    font-weight: var(--font-display-weight);
+    letter-spacing: -0.02em;
   }
 
   &__desc {
