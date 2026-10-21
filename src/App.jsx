@@ -1,5 +1,6 @@
 import Ledger from './Ledger';
 import LoginScreen from './components/Login/LoginScreen';
+import { HOUSEHOLD } from './constants/users';
 import { useAuth, useMember } from './hooks/useAuth';
 import { isSupabaseConfigured } from './lib/supabase';
 import './components/Login/LoginScreen.scss';
@@ -19,9 +20,9 @@ const AuthGate = () => {
   const { session, ready, signIn, signOut } = useAuth();
   const member = useMember(session);
 
-  if (!ready) return <Message title="만년 가계부">불러오는 중…</Message>;
+  if (!ready) return <Message title={HOUSEHOLD.name}>불러오는 중…</Message>;
   if (!session) return <LoginScreen onSignIn={signIn} />;
-  if (!member.checked) return <Message title="만년 가계부">계정을 확인하는 중…</Message>;
+  if (!member.checked) return <Message title={HOUSEHOLD.name}>계정을 확인하는 중…</Message>;
 
   if (!member.memberId) {
     return (

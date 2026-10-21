@@ -1,5 +1,6 @@
 import { formatAmount } from '../../utils/format';
 import { compareAmount } from '../../utils/summary';
+import { IS_SINGLE_USER } from '../../constants/users';
 import UserBadge from '../UserBadge/UserBadge';
 import './Summary.scss';
 
@@ -102,8 +103,12 @@ const MonthlySummary = ({ month, prevMonth, viewLabel, totals, userSummary, acti
 
       {!compact && (
         <>
-          <h3 className="summary-card__subtitle">사람별 · 최종합산</h3>
-          <UserTable rows={userSummary.rows} total={userSummary.total} activeUser={activeUser} />
+          {!IS_SINGLE_USER && (
+            <>
+              <h3 className="summary-card__subtitle">사람별 · 최종합산</h3>
+              <UserTable rows={userSummary.rows} total={userSummary.total} activeUser={activeUser} />
+            </>
+          )}
 
           <ExpenseComparison expense={expense} prevExpense={prevExpense} prevMonth={prevMonth} />
         </>

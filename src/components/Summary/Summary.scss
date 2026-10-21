@@ -10,6 +10,10 @@
 
   // 제목 옆 보기 범위 (전체/정우/계주)
   &__scope {
+    &:empty {
+      display: none;
+    }
+
     margin-left: 4px;
     padding: 2px 8px;
     border-radius: 999px;

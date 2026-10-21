@@ -1,7 +1,10 @@
-import { DEFAULT_USER_ID } from '../constants/users';
+import { DEFAULT_USER_ID, HOUSEHOLD } from '../constants/users';
+import { getHouseholdId } from '../config/households';
 
+// 여러 가계부가 같은 사이트 도메인을 쓰므로, 우리 집(home) 외에는 저장 키를 따로 둔다
+const householdId = getHouseholdId(import.meta.env.MODE);
 const STORAGE_KEY = 'money-tracker:v1';
-const PREFS_KEY = 'money-tracker:prefs';
+const PREFS_KEY = householdId === 'home' ? 'money-tracker:prefs' : `money-tracker:${householdId}:prefs`;
 
 // 예전 id → 현재 id
 const LEGACY_USER_IDS = { gyeju: 'kyeju' };
@@ -14,6 +17,7 @@ const normalize = (t) => {
 
 // Supabase로 옮기기 전 이 브라우저에 저장돼 있던 내역 (옮기기 용도로만 읽음)
 export const loadLocalTransactions = () => {
+  if (!HOUSEHOLD.importLegacyLocal) return [];
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     const parsed = raw ? JSON.parse(raw) : [];

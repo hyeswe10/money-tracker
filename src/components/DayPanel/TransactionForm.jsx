@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { detectBrand } from '../../constants/brands';
 import { CATEGORIES, TRANSACTION_TYPES, TYPE_LABELS } from '../../constants/categories';
-import { USERS } from '../../constants/users';
+import { IS_SINGLE_USER, USERS } from '../../constants/users';
 import CategoryIcon from '../CategoryIcon/CategoryIcon';
 
 const TYPES = [TRANSACTION_TYPES.EXPENSE, TRANSACTION_TYPES.INCOME, TRANSACTION_TYPES.SAVING, TRANSACTION_TYPES.TRANSFER];
@@ -150,24 +150,26 @@ const TransactionForm = ({
 
   return (
     <form className="tx-form" onSubmit={handleSubmit}>
-      <div className="tx-form__field">
-        <span>누가</span>
-        <div className="tx-form__users" role="radiogroup" aria-label="작성자">
-          {USERS.map(({ id, name, color }) => (
-            <button
-              key={id}
-              type="button"
-              role="radio"
-              aria-checked={form.user === id}
-              className={`tx-form__user${form.user === id ? ' is-active' : ''}`}
-              style={{ '--user-color': color }}
-              onClick={() => set({ user: id })}
-            >
-              {name}
-            </button>
-          ))}
+      {!IS_SINGLE_USER && (
+        <div className="tx-form__field">
+          <span>누가</span>
+          <div className="tx-form__users" role="radiogroup" aria-label="작성자">
+            {USERS.map(({ id, name, color }) => (
+              <button
+                key={id}
+                type="button"
+                role="radio"
+                aria-checked={form.user === id}
+                className={`tx-form__user${form.user === id ? ' is-active' : ''}`}
+                style={{ '--user-color': color }}
+                onClick={() => set({ user: id })}
+              >
+                {name}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {withDate && (
         <label className="tx-form__field">

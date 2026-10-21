@@ -5,8 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:mom": "vite --mode mom",
     "build": "vite build",
-    "preview": "vite preview"
+    "build:mom": "vite build --mode mom",
+    "preview": "vite preview",
+    "preview:mom": "vite preview --mode mom"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.3",

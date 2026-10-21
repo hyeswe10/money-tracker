@@ -45,6 +45,18 @@ jobs:
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
         run: npm run build
 
+      # 엄마 가계부(/mom/): 엄마용 Supabase 프로젝트 시크릿이 등록돼 있을 때만 함께 빌드
+      - name: Build (mom)
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.MOM_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.MOM_SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          if [ -z "$VITE_SUPABASE_URL" ] || [ -z "$VITE_SUPABASE_PUBLISHABLE_KEY" ]; then
+            echo "::warning::MOM_SUPABASE_URL / MOM_SUPABASE_PUBLISHABLE_KEY 시크릿이 없어 엄마 가계부는 건너뜁니다."
+          else
+            npm run build:mom
+          fi
+
       - uses: actions/configure-pages@v5
 
       - uses: actions/upload-pages-artifact@v3

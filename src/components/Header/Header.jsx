@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { PAGES } from '../../constants/pages';
+import { HOUSEHOLD } from '../../constants/users';
 import './Header.scss';
 
 const MONTHS = Array.from({ length: 12 }, (_, i) => i);
@@ -68,7 +69,7 @@ const Header = ({ page, year, month, onMove, onChange, onToday }) => {
             <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" />
           </svg>
         </span>
-        <h1 className="header__title">만년 가계부</h1>
+        <h1 className="header__title">{HOUSEHOLD.name}</h1>
       </div>
       <nav className="header__tabs" aria-label="메뉴">
         {PAGES.map((p) => (

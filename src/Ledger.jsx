@@ -13,7 +13,7 @@ import SubscriptionsPage from './components/Subscriptions/SubscriptionsPage';
 import CoupayCard from './components/Coupay/CoupayCard';
 import { useHashRoute } from './hooks/useHashRoute';
 import { DEFAULT_PAGE, resolvePage } from './constants/pages';
-import { ALL_USERS, DEFAULT_USER_ID, USERS, getUser } from './constants/users';
+import { ALL_USERS, DEFAULT_USER_ID, IS_SINGLE_USER, USERS, getUser } from './constants/users';
 import { addMonth, getDaysInMonth, getPreviousMonths, getTodayKey, toDateKey, toMonthKey } from './utils/calendar';
 import { buildPlannedRows } from './utils/recurring';
 import { averageOverMonths, cumulativeSaving, filterByUser, summarizeByUser, summarizeMonth } from './utils/summary';
@@ -82,7 +82,8 @@ const Ledger = ({ session, memberId, onSignOut }) => {
   const { year, month } = view;
   const { userFilter, lastUser } = prefs;
   const monthKey = toMonthKey(year, month);
-  const viewLabel = userFilter === ALL_USERS ? '전체' : getUser(userFilter).name;
+  // 혼자 쓰는 가계부면 카드 제목 옆 보기 범위(전체/정우/계주)를 비워서 숨긴다
+  const viewLabel = IS_SINGLE_USER ? '' : userFilter === ALL_USERS ? '전체' : getUser(userFilter).name;
 
   // 필터가 특정 사람이면 그 사람, 전체면 로그인한 본인(없으면 마지막 작성자)을 입력 기본값으로
   const defaultUser = userFilter === ALL_USERS ? (memberId ?? lastUser) : userFilter;
@@ -172,7 +173,11 @@ const Ledger = ({ session, memberId, onSignOut }) => {
     <div className="app">
       <Header page={page} year={year} month={month} onMove={handleMove} onChange={changeView} onToday={handleToday} />
       <div className="app__toolbar">
-        <UserFilter value={userFilter} onChange={(id) => setPrefs((p) => ({ ...p, userFilter: id }))} />
+        {IS_SINGLE_USER ? (
+          <span />
+        ) : (
+          <UserFilter value={userFilter} onChange={(id) => setPrefs((p) => ({ ...p, userFilter: id }))} />
+        )}
         <div className="app__account">
           {loading && <span className="app__loading">불러오는 중…</span>}
           <span>{me}</span>

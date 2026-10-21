@@ -1,8 +1,11 @@
-export const USERS = [
-  { id: 'jungwoo', name: '정우', color: '#5a5fe8' },
-  { id: 'kyeju', name: '계주', color: '#e8780c' },
-  { id: 'shared', name: '공용', color: '#1098ad' }, // 두 사람이 같이 쓰는 돈 (로그인 계정 아님)
-];
+import { getHousehold } from '../config/households';
+
+export const HOUSEHOLD = getHousehold(import.meta.env.MODE);
+
+export const USERS = HOUSEHOLD.users;
+
+// 혼자 쓰는 가계부면 작성자 선택·사람별 표·보기 필터를 숨긴다
+export const IS_SINGLE_USER = USERS.length === 1;
 
 // 보기 필터에서 '전체'를 뜻하는 값
 export const ALL_USERS = 'all';

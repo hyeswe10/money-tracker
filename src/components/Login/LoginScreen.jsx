@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { HOUSEHOLD } from '../../constants/users';
 import { toAuthMessage } from '../../hooks/useAuth';
 import './LoginScreen.scss';
 
@@ -29,8 +30,8 @@ const LoginScreen = ({ onSignIn }) => {
             <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" />
           </svg>
         </span>
-        <h1 className="login__title">만년 가계부</h1>
-        <p className="login__desc">정우 · 계주 계정으로 로그인하세요</p>
+        <h1 className="login__title">{HOUSEHOLD.name}</h1>
+        <p className="login__desc">{HOUSEHOLD.loginHint}</p>
 
         <label className="login__field">
           <span>이메일</span>

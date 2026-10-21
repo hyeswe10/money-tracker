@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { USERS } from '../../constants/users';
+import { IS_SINGLE_USER, USERS } from '../../constants/users';
 import { getTodayKey } from '../../utils/calendar';
 import { formatAmount } from '../../utils/format';
 import { annualAmount, monthlyEquivalent, nextPaymentDate, scheduleLabel } from '../../utils/recurring';
@@ -82,16 +82,18 @@ const SubscriptionsPage = ({ rules, viewLabel, defaultUser, onAdd, onUpdate, onD
           </div>
         </dl>
 
-        <ul className="subs__people">
-          {byUser.map((u) => (
-            <li key={u.id}>
-              <UserBadge userId={u.id} />
-              <span>
-                {u.count}개 · 월 <strong>{formatAmount(u.monthly)}</strong>
-              </span>
-            </li>
-          ))}
-        </ul>
+        {!IS_SINGLE_USER && (
+          <ul className="subs__people">
+            {byUser.map((u) => (
+              <li key={u.id}>
+                <UserBadge userId={u.id} />
+                <span>
+                  {u.count}개 · 월 <strong>{formatAmount(u.monthly)}</strong>
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
 
         {mode !== null && (
           <div className="recurring__form">
