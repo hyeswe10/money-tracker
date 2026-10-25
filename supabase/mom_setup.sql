@@ -1,6 +1,6 @@
 -- 엄마 가계부(만년형 가계부) 전용 Supabase 프로젝트 설정
 -- 새 프로젝트의 SQL Editor 에서 아래 순서대로 실행:
---   1) schema.sql  2) 002_recurring.sql  3) 003_subscription_yearly.sql  4) 005_coupay_transfer.sql  5) 이 파일
+--   1) schema.sql  2) 002_recurring.sql  3) 003_subscription_yearly.sql  4) 005_coupay_transfer.sql  5) 006_planner.sql  6) 007_shopping_memo.sql  7) 이 파일
 -- (004_shared_member.sql 은 우리 집 가계부의 '공용' 작성자라서 실행하지 않음)
 -- 여러 번 실행해도 안전
 

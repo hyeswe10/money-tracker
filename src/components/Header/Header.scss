@@ -205,7 +205,8 @@
       bottom: calc(var(--tabbar-inset) + env(safe-area-inset-bottom));
       z-index: 20;
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(0, 1fr); // 탭 수만큼 같은 너비
       gap: 4px;
       margin: 0;
       padding: 6px;

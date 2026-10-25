@@ -1,0 +1,551 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+// 계획 탭: 예산 · 살 것 · 메모
+
+.budget {
+  // 남은 예산 크게 + 사용 막대 (세로선 = 오늘까지 지난 비율)
+  &__hero {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-bottom: 12px;
+    padding: 14px 16px;
+    border-radius: $radius;
+    background: $color-primary-soft;
+
+    > span {
+      font-size: 12px;
+      font-weight: 600;
+      color: $color-text-soft;
+    }
+
+    strong {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: $color-primary;
+    }
+
+    small {
+      font-size: 11px;
+      color: $color-muted;
+    }
+
+    &.is-over {
+      background: rgba($color-expense, 0.07);
+      box-shadow: inset 0 0 0 1.5px rgba($color-expense, 0.4);
+
+      strong {
+        color: $color-expense;
+      }
+
+      .budget__fill {
+        background: $color-expense;
+      }
+    }
+  }
+
+  &__bar {
+    position: relative;
+    height: 8px;
+    margin: 8px 0 6px;
+    border-radius: 999px;
+    background: $color-surface;
+  }
+
+  &__fill {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: $color-primary;
+  }
+
+  &__today {
+    position: absolute;
+    top: -3px;
+    bottom: -3px;
+    width: 2px;
+    margin-left: -1px;
+    border-radius: 1px;
+    background: $color-text;
+  }
+
+  &__tiles {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: $space-sm;
+  }
+
+  &__categories {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    em {
+      margin-left: 6px;
+      padding: 0 6px;
+      border-radius: 999px;
+      font-style: normal;
+      font-size: 10px;
+      font-weight: 700;
+      line-height: 1.7;
+    }
+
+    .is-over em {
+      background: rgba($color-expense, 0.12);
+      color: $color-expense;
+    }
+
+    .is-fast em {
+      background: #fff4e0;
+      color: #a35a00;
+    }
+
+    .is-over .budget__cat-bar span {
+      background: $color-expense;
+    }
+
+    .is-fast .budget__cat-bar span {
+      background: #e08a00;
+    }
+  }
+
+  &__cat-body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__cat-label {
+    display: flex;
+    justify-content: space-between;
+    gap: $space-sm;
+    margin-bottom: 4px;
+    font-size: 13px;
+    font-weight: 600;
+
+    small {
+      font-weight: 400;
+      color: $color-muted;
+    }
+  }
+
+  &__cat-bar {
+    height: 6px;
+    border-radius: 999px;
+    background: $color-subtle;
+    overflow: hidden;
+
+    span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: $color-saving;
+    }
+  }
+}
+
+.budget-form {
+  &__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $space-sm;
+    margin-top: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: $color-text-soft;
+  }
+
+  &__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px 12px;
+
+    li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: $space-sm;
+    }
+
+    input {
+      @include filled-input;
+      width: 110px;
+      padding: 7px 10px;
+      text-align: right;
+    }
+
+    @include mobile {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  &__name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    font-size: 13px;
+    font-weight: 600;
+
+    > span {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    small {
+      font-size: 10px;
+      font-weight: 400;
+      color: $color-muted;
+    }
+  }
+}
+
+// 추천 문구: 좋음 ✓ / 참고 i / 주의 ! / 경고 !
+.advice {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  &__item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: $radius;
+    background: $color-subtle;
+    font-size: 13px;
+    line-height: 1.5;
+
+    &.is-good {
+      background: $tint-saving;
+    }
+
+    &.is-warn {
+      background: #fff6e6;
+    }
+
+    &.is-bad {
+      background: $tint-expense;
+    }
+  }
+
+  &__icon {
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    width: 18px;
+    height: 18px;
+    margin-top: 1px;
+    border-radius: 50%;
+    background: $color-muted;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+
+    .is-good & {
+      background: $color-saving;
+    }
+
+    .is-warn & {
+      background: #d17f00;
+    }
+
+    .is-bad & {
+      background: $color-expense;
+    }
+  }
+}
+
+.shopping {
+  &__form {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+    gap: 6px;
+    margin-bottom: $space-md;
+
+    input,
+    select,
+    textarea {
+      @include filled-input;
+      min-width: 0;
+      padding: 9px 10px;
+    }
+
+    @include mobile {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+
+      .shopping__name {
+        grid-column: 1 / -1;
+      }
+
+      .shopping__submit {
+        grid-column: 1 / -1;
+      }
+    }
+  }
+
+  // 메모는 입력 줄 아래 한 줄 전체
+  &__memo-input {
+    grid-column: 1 / -1;
+    resize: vertical;
+    font: inherit;
+    line-height: 1.5;
+  }
+
+  &__memo {
+    margin: 4px 0 0;
+    padding: 6px 10px;
+    border-radius: $radius-sm;
+    background: $color-surface;
+    font-size: 12px;
+    line-height: 1.6;
+    color: $color-text-soft;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  // 항목 수정: 목록 칸 안에 같은 폼 (추가 버튼 대신 취소·저장)
+  &__item.is-editing {
+    display: block;
+    background: $color-accent-soft;
+    box-shadow: inset 0 0 0 1.5px color-mix(in srgb, #{$color-accent} 40%, transparent);
+  }
+
+  &__form.is-edit {
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 1fr);
+    margin-bottom: 0;
+
+    @include mobile {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+
+    input,
+    select,
+    textarea {
+      background: $color-surface;
+    }
+  }
+
+  &__form-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: $space-sm;
+
+    .btn {
+      flex: 1;
+      padding: 9px 16px;
+    }
+
+    .btn--ghost {
+      background: $color-surface;
+    }
+  }
+
+  &__submit {
+    padding: 9px 16px;
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+  }
+
+  &__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 18px;
+    background: $color-subtle;
+
+    > input {
+      flex-shrink: 0;
+      width: 18px;
+      height: 18px;
+      margin: 2px 0 0;
+      accent-color: $color-primary;
+      cursor: pointer;
+    }
+
+    &.is-done .shopping__title {
+      text-decoration: line-through;
+      color: $color-muted;
+    }
+  }
+
+  &__info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    .tx-item__meta strong {
+      color: $color-text;
+    }
+  }
+
+  &__title {
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+
+  &__verdict {
+    margin-top: 4px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: $color-text-soft;
+
+    em {
+      margin-right: 6px;
+      padding: 1px 7px;
+      border-radius: 999px;
+      font-style: normal;
+      font-size: 11px;
+      font-weight: 800;
+      background: $color-surface;
+    }
+
+    &.is-ok em {
+      background: $tint-saving;
+      color: $color-saving;
+    }
+
+    &.is-tight em {
+      background: #fff1d6;
+      color: #94530a;
+    }
+
+    &.is-over em {
+      background: $tint-expense;
+      color: $color-expense;
+    }
+
+    &.is-unknown em {
+      color: $color-muted;
+    }
+  }
+
+  &__actions {
+    flex-shrink: 0;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+  }
+
+  &__done {
+    margin-top: 10px;
+  }
+
+  &__done-head {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+
+  &__more {
+    @include button-reset;
+    flex: 1;
+    padding: 8px;
+    border-radius: $radius;
+    font-size: 12px;
+    font-weight: 600;
+    color: $color-text-soft;
+
+    &:hover {
+      background: $color-subtle;
+    }
+  }
+}
+
+.notes {
+  textarea {
+    @include filled-input;
+    width: 100%;
+    min-height: 72px;
+    resize: vertical;
+    font: inherit;
+    line-height: 1.6;
+  }
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: $space-sm;
+    margin-bottom: $space-md;
+
+    .btn {
+      align-self: flex-end;
+      padding: 9px 16px;
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+    }
+  }
+
+  &__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px 14px;
+    border-radius: 18px;
+    background: $color-subtle;
+
+    &.is-pinned {
+      background: $color-accent-soft;
+    }
+  }
+
+  &__content {
+    margin: 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    line-height: 1.6;
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 4px $space-sm;
+  }
+}

@@ -4,6 +4,7 @@ export const PAGES = [
   { id: 'stats', label: '통계', monthly: true },
   { id: 'fixed', label: '고정·구독', monthly: false },
   { id: 'coupay', label: '쿠페이', monthly: true },
+  { id: 'plan', label: '계획', monthly: false }, // 예산·살 것·메모 (항상 이번 달 기준)
 ];
 
 export const DEFAULT_PAGE = 'ledger';

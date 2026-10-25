@@ -11,10 +11,15 @@ import { useLedgerData } from './hooks/useLedgerData';
 import RecurringPanel from './components/Recurring/RecurringPanel';
 import SubscriptionsPage from './components/Subscriptions/SubscriptionsPage';
 import CoupayCard from './components/Coupay/CoupayCard';
+import BudgetCard from './components/Planner/BudgetCard';
+import ShoppingList from './components/Planner/ShoppingList';
+import NotesCard from './components/Planner/NotesCard';
 import { useHashRoute } from './hooks/useHashRoute';
+import { usePlannerData } from './hooks/usePlannerData';
 import { DEFAULT_PAGE, resolvePage } from './constants/pages';
 import { ALL_USERS, DEFAULT_USER_ID, IS_SINGLE_USER, USERS, getUser } from './constants/users';
 import { addMonth, getDaysInMonth, getPreviousMonths, getTodayKey, toDateKey, toMonthKey } from './utils/calendar';
+import { analyzeBudget, buildAdvice } from './utils/budget';
 import { buildPlannedRows } from './utils/recurring';
 import { averageOverMonths, cumulativeSaving, filterByUser, summarizeByUser, summarizeMonth } from './utils/summary';
 import { loadLocalTransactions, loadPrefs, savePrefs } from './utils/storage';
@@ -54,6 +59,7 @@ const Ledger = ({ session, memberId, onSignOut }) => {
     updateRule,
     deleteRule,
   } = useLedgerData(session.user.id);
+  const planner = usePlannerData(session.user.id);
 
   // Supabase 전환 전에 이 브라우저에만 저장돼 있던 내역
   const [localTransactions] = useState(loadLocalTransactions);
@@ -166,6 +172,29 @@ const Ledger = ({ session, memberId, onSignOut }) => {
   // 사람별 표는 필터와 상관없이 항상 두 사람 모두 보여준다
   const userSummary = useMemo(() => summarizeByUser(transactions, monthKey), [transactions, monthKey]);
 
+  // 예산은 집 전체에 하나 → 보기 필터와 관계없이 전체 내역의 이번 달로 계산
+  const budgetAnalysis = useMemo(
+    () => analyzeBudget(transactions, planner.budgets, getTodayKey()),
+    [transactions, planner.budgets],
+  );
+  const budgetTips = useMemo(
+    () => buildAdvice(budgetAnalysis, planner.budgets, planner.items),
+    [budgetAnalysis, planner.budgets, planner.items],
+  );
+
+  // 살 것 '샀어요': 오늘 지출로 기록한 뒤 체크
+  const handleRecordItem = async (item) => {
+    const saved = await addTransaction({
+      date: getTodayKey(),
+      type: 'expense',
+      amount: item.amount,
+      category: item.category ?? '기타지출',
+      memo: item.name,
+      user: defaultUser,
+    });
+    if (saved !== null) planner.itemActions.update(item.id, { done: true });
+  };
+
   const dayTransactions = useMemo(
     () => visible.filter((t) => t.date === selectedDate).sort((a, b) => a.createdAt - b.createdAt),
     [visible, selectedDate],
@@ -193,6 +222,15 @@ const Ledger = ({ session, memberId, onSignOut }) => {
         <div className="app__notice app__notice--error" role="alert">
           <span>{error}</span>
           <button type="button" onClick={clearError} aria-label="닫기">
+            ✕
+          </button>
+        </div>
+      )}
+
+      {planner.error && (
+        <div className="app__notice app__notice--error" role="alert">
+          <span>{planner.error}</span>
+          <button type="button" onClick={planner.clearError} aria-label="닫기">
             ✕
           </button>
         </div>
@@ -321,6 +359,45 @@ const Ledger = ({ session, memberId, onSignOut }) => {
           />
         </main>
       )}
+
+      {page === 'plan' &&
+        (planner.needsSetup ? (
+          <div className="app__notice">
+            <span>
+              계획 탭을 쓰려면 Supabase SQL Editor에서 <strong>supabase/006_planner.sql</strong>을 한 번 실행해주세요.
+            </span>
+          </div>
+        ) : (
+          <main className="app__main app__main--even">
+            <div className="app__col">
+              <BudgetCard
+                analysis={budgetAnalysis}
+                budgets={planner.budgets}
+                tips={budgetTips}
+                onSave={planner.saveBudgets}
+              />
+            </div>
+            <div className="app__col">
+              <ShoppingList
+                items={planner.items}
+                analysis={budgetAnalysis}
+                budgets={planner.budgets}
+                defaultUser={defaultUser}
+                onAdd={planner.itemActions.add}
+                onUpdate={planner.itemActions.update}
+                onDelete={planner.itemActions.remove}
+                onRecord={handleRecordItem}
+              />
+              <NotesCard
+                notes={planner.notes}
+                defaultUser={defaultUser}
+                onAdd={planner.noteActions.add}
+                onUpdate={planner.noteActions.update}
+                onDelete={planner.noteActions.remove}
+              />
+            </div>
+          </main>
+        ))}
     </div>
   );
 };
