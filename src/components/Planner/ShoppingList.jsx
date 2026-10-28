@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { CATEGORIES } from '../../constants/categories';
-import { judgeItem } from '../../utils/budget';
+import { IS_SINGLE_USER, USERS } from '../../constants/users';
+import { addMonth, toMonthKey } from '../../utils/calendar';
 import { formatAmount } from '../../utils/format';
 import UserBadge from '../UserBadge/UserBadge';
 import '../DayPanel/DayPanel.scss';
@@ -8,22 +9,42 @@ import '../Summary/Summary.scss';
 import '../Recurring/RecurringPanel.scss';
 import './Planner.scss';
 
-const VERDICT_LABELS = { ok: '여유', tight: '빠듯', over: '무리', unknown: '예산 없음' };
 const NAME_MAX = 50;
 const MEMO_MAX = 500;
+// 살 달 고르기: 보고 있는 달 기준 앞 6개월 ~ 뒤 12개월
+const MONTHS_BEFORE = 6;
+const MONTHS_AFTER = 12;
 
 const withComma = (digits) => (digits ? Number(digits).toLocaleString('ko-KR') : '');
 
-const toFormState = (item) => ({
+const monthLabel = (key) => {
+  const [y, m] = key.split('-').map(Number);
+  return `${y}년 ${m}월`;
+};
+
+// 미정 + 보고 있는 달 주변. 항목의 달이 범위 밖이면 그 달도 넣는다
+const getMonthOptions = (monthKey, current) => {
+  const [y, m] = monthKey.split('-').map(Number);
+  const keys = Array.from({ length: MONTHS_BEFORE + MONTHS_AFTER + 1 }, (_, i) => {
+    const d = addMonth(y, m - 1, i - MONTHS_BEFORE);
+    return toMonthKey(d.year, d.month);
+  });
+  if (current && !keys.includes(current)) keys.push(current);
+  return keys.sort();
+};
+
+const toFormState = (item, defaultUser, monthKey) => ({
   name: item?.name ?? '',
   amount: item?.amount ? String(item.amount) : '',
   category: item?.category ?? '',
   memo: item?.memo ?? '',
+  user: item?.user ?? defaultUser,
+  month: item ? (item.month ?? '') : monthKey,
 });
 
 // 살 것 추가·수정 폼. initial이 있으면 수정
-const ItemForm = ({ initial, onSubmit, onCancel }) => {
-  const [form, setForm] = useState(() => toFormState(initial));
+const ItemForm = ({ initial, defaultUser, monthKey, onSubmit, onCancel }) => {
+  const [form, setForm] = useState(() => toFormState(initial, defaultUser, monthKey));
   const set = (patch) => setForm((p) => ({ ...p, ...patch }));
 
   const handleSubmit = (e) => {
@@ -35,14 +56,34 @@ const ItemForm = ({ initial, onSubmit, onCancel }) => {
       name: name.slice(0, NAME_MAX),
       amount: Number(form.amount) || null,
       category: form.category || null,
+      user: form.user,
+      month: form.month || null,
       // 메모가 바뀔 때만 보냄 (007을 실행하기 전에도 메모 없이 추가·수정은 되도록)
       ...(memo !== (initial?.memo ?? '') ? { memo } : {}),
     });
-    if (!initial) setForm(toFormState());
+    // 다음 항목도 같은 사람·같은 달로 이어서 적기 쉽게
+    if (!initial) setForm((p) => toFormState(null, p.user, p.month));
   };
 
   return (
     <form className={`shopping__form${initial ? ' is-edit' : ''}`} onSubmit={handleSubmit}>
+      {!IS_SINGLE_USER && (
+        <div className="tx-form__users shopping__users" role="radiogroup" aria-label="누구 것">
+          {USERS.map(({ id, name, color }) => (
+            <button
+              key={id}
+              type="button"
+              role="radio"
+              aria-checked={form.user === id}
+              className={`tx-form__user${form.user === id ? ' is-active' : ''}`}
+              style={{ '--user-color': color }}
+              onClick={() => set({ user: id })}
+            >
+              {name}
+            </button>
+          ))}
+        </div>
+      )}
       <input
         className="shopping__name"
         value={form.name}
@@ -73,6 +114,19 @@ const ItemForm = ({ initial, onSubmit, onCancel }) => {
           </option>
         ))}
       </select>
+      <select
+        className="shopping__month"
+        value={form.month}
+        onChange={(e) => set({ month: e.target.value })}
+        aria-label="살 달"
+      >
+        <option value="">언제 살지 미정</option>
+        {getMonthOptions(monthKey, initial?.month).map((key) => (
+          <option key={key} value={key}>
+            {monthLabel(key)}
+          </option>
+        ))}
+      </select>
       {!initial && (
         <button type="submit" className="btn btn--primary shopping__submit" disabled={!form.name.trim()}>
           추가
@@ -82,7 +136,7 @@ const ItemForm = ({ initial, onSubmit, onCancel }) => {
         className="shopping__memo-input"
         value={form.memo}
         onChange={(e) => set({ memo: e.target.value })}
-        placeholder="메모 (선택) · 어디서 살지, 크기·색, 이사 전에 필요 등"
+        placeholder="메모 (선택) · 어디서 살지, 크기·색 등"
         maxLength={MEMO_MAX}
         rows={initial ? 3 : 1}
         aria-label="메모"
@@ -101,21 +155,35 @@ const ItemForm = ({ initial, onSubmit, onCancel }) => {
   );
 };
 
-// 앞으로 살 것 체크리스트. 금액을 적으면 이번 달 예산으로 살 만한지 알려준다
-const ShoppingList = ({ items, analysis, budgets, defaultUser, onAdd, onUpdate, onDelete, onRecord }) => {
+const sumAmount = (list) => list.reduce((s, i) => s + (i.amount ?? 0), 0);
+
+const Totals = ({ list }) => {
+  const sum = sumAmount(list);
+  return (
+    <p className="recurring__totals">
+      {list.length}개{sum > 0 && <> · 예상 <strong>{formatAmount(sum)}</strong></>}
+    </p>
+  );
+};
+
+// 살 것 목록: 달마다 따로, 언제 살지 안 정한 것은 '미정'에 모아 둔다
+// monthKey: 헤더에서 보고 있는 달, todayMonthKey: 미정 항목을 체크하면 이번 달로 옮긴다
+const ShoppingList = ({ items, month, monthKey, todayMonthKey, viewLabel, defaultUser, onAdd, onUpdate, onDelete, onRecord }) => {
   const [showDone, setShowDone] = useState(false);
   const [editingId, setEditingId] = useState(null);
 
-  const todo = items.filter((i) => !i.done).sort((a, b) => a.createdAt - b.createdAt);
-  const done = items.filter((i) => i.done).sort((a, b) => b.createdAt - a.createdAt);
-  const todoSum = todo.reduce((s, i) => s + (i.amount ?? 0), 0);
-
-  const handleAdd = (data) => onAdd({ ...data, user: defaultUser, done: false });
+  const byCreated = (a, b) => a.createdAt - b.createdAt;
+  const monthItems = items.filter((i) => i.month === monthKey);
+  const todo = monthItems.filter((i) => !i.done).sort(byCreated);
+  const done = monthItems.filter((i) => i.done).sort((a, b) => b.createdAt - a.createdAt);
+  const undecided = items.filter((i) => !i.month && !i.done).sort(byCreated);
 
   const handleEdit = (data) => {
     onUpdate(editingId, data);
     setEditingId(null);
   };
+
+  const handleCheck = (item) => onUpdate(item.id, { done: true, ...(item.month ? {} : { month: todayMonthKey }) });
 
   const handleDelete = (item) => {
     if (window.confirm(`'${item.name}'을(를) 목록에서 지울까요?`)) onDelete(item.id);
@@ -125,70 +193,65 @@ const ShoppingList = ({ items, analysis, budgets, defaultUser, onAdd, onUpdate, 
     if (window.confirm(`산 것 ${done.length}개를 목록에서 지울까요?`)) done.forEach((i) => onDelete(i.id));
   };
 
+  const renderTodo = (list) => (
+    <ul className="shopping__list">
+      {list.map((item) => {
+        if (editingId === item.id) {
+          return (
+            <li key={item.id} className="shopping__item is-editing">
+              <ItemForm initial={item} monthKey={monthKey} onSubmit={handleEdit} onCancel={() => setEditingId(null)} />
+            </li>
+          );
+        }
+        return (
+          <li key={item.id} className="shopping__item">
+            <input
+              type="checkbox"
+              checked={false}
+              onChange={() => handleCheck(item)}
+              aria-label={`${item.name} 완료`}
+            />
+            <div className="shopping__info">
+              <span className="shopping__title">{item.name}</span>
+              <span className="tx-item__meta">
+                <UserBadge userId={item.user} />
+                {item.amount && <strong>{formatAmount(item.amount)}</strong>}
+                {item.category && <span>{item.category}</span>}
+              </span>
+              {item.memo && <p className="shopping__memo">{item.memo}</p>}
+            </div>
+            <div className="tx-item__actions shopping__actions">
+              {item.amount && (
+                <button type="button" onClick={() => onRecord(item)} title="오늘 지출로 기록하고 체크">
+                  샀어요
+                </button>
+              )}
+              <button type="button" onClick={() => setEditingId(item.id)}>
+                수정
+              </button>
+              <button type="button" className="is-danger" onClick={() => handleDelete(item)}>
+                삭제
+              </button>
+            </div>
+          </li>
+        );
+      })}
+    </ul>
+  );
+
   return (
     <section className="summary-card shopping">
-      <h2 className="summary-card__title">살 것</h2>
-      {todo.length > 0 && (
-        <p className="recurring__totals">
-          {todo.length}개{todoSum > 0 && <> · 예상 <strong>{formatAmount(todoSum)}</strong></>}
-        </p>
-      )}
+      <h2 className="summary-card__title">
+        {month + 1}월에 살 것 <span className="summary-card__scope">{viewLabel}</span>
+      </h2>
+      {todo.length > 0 && <Totals list={todo} />}
 
-      <ItemForm onSubmit={handleAdd} />
+      <ItemForm key={monthKey} defaultUser={defaultUser} monthKey={monthKey} onSubmit={(data) => onAdd({ ...data, done: false })} />
 
       {todo.length === 0 ? (
-        <p className="summary-card__empty">사야 할 것을 적어 두면, 금액에 따라 이번 달에 사도 될지 알려드려요.</p>
+        <p className="summary-card__empty">{month + 1}월에 살 것이 없어요.</p>
       ) : (
-        <ul className="shopping__list">
-          {todo.map((item) => {
-            if (editingId === item.id) {
-              return (
-                <li key={item.id} className="shopping__item is-editing">
-                  <ItemForm initial={item} onSubmit={handleEdit} onCancel={() => setEditingId(null)} />
-                </li>
-              );
-            }
-            const verdict = judgeItem(item, analysis, budgets);
-            return (
-              <li key={item.id} className="shopping__item">
-                <input
-                  type="checkbox"
-                  checked={false}
-                  onChange={() => onUpdate(item.id, { done: true })}
-                  aria-label={`${item.name} 완료`}
-                />
-                <div className="shopping__info">
-                  <span className="shopping__title">{item.name}</span>
-                  <span className="tx-item__meta">
-                    <UserBadge userId={item.user} />
-                    {item.amount && <strong>{formatAmount(item.amount)}</strong>}
-                    {item.category && <span>{item.category}</span>}
-                  </span>
-                  {item.memo && <p className="shopping__memo">{item.memo}</p>}
-                  {verdict && (
-                    <span className={`shopping__verdict is-${verdict.level}`}>
-                      <em>{VERDICT_LABELS[verdict.level]}</em>
-                      {verdict.text}
-                    </span>
-                  )}
-                </div>
-                <div className="tx-item__actions shopping__actions">
-                  {item.amount && (
-                    <button type="button" onClick={() => onRecord(item)} title="오늘 지출로 기록하고 체크">
-                      샀어요
-                    </button>
-                  )}
-                  <button type="button" onClick={() => setEditingId(item.id)}>
-                    수정
-                  </button>
-                  <button type="button" className="is-danger" onClick={() => handleDelete(item)}>
-                    삭제
-                  </button>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
+        renderTodo(todo)
       )}
 
       {done.length > 0 && (
@@ -215,7 +278,10 @@ const ShoppingList = ({ items, analysis, budgets, defaultUser, onAdd, onUpdate, 
                   />
                   <div className="shopping__info">
                     <span className="shopping__title">{item.name}</span>
-                    {item.amount && <span className="tx-item__meta">{formatAmount(item.amount)}</span>}
+                    <span className="tx-item__meta">
+                      <UserBadge userId={item.user} />
+                      {item.amount && <span>{formatAmount(item.amount)}</span>}
+                    </span>
                     {item.memo && <p className="shopping__memo">{item.memo}</p>}
                   </div>
                   <div className="tx-item__actions shopping__actions">
@@ -229,6 +295,16 @@ const ShoppingList = ({ items, analysis, budgets, defaultUser, onAdd, onUpdate, 
           )}
         </div>
       )}
+
+      <div className="shopping__undecided">
+        <h3 className="shopping__subtitle">언제 살지 미정</h3>
+        {undecided.length > 0 && <Totals list={undecided} />}
+        {undecided.length === 0 ? (
+          <p className="summary-card__empty">살 달을 &lsquo;언제 살지 미정&rsquo;으로 두면 여기에 모여요.</p>
+        ) : (
+          renderTodo(undecided)
+        )}
+      </div>
     </section>
   );
 };
