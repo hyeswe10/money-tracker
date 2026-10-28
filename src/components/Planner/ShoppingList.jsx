@@ -157,12 +157,33 @@ const ItemForm = ({ initial, defaultUser, monthKey, onSubmit, onCancel }) => {
 
 const sumAmount = (list) => list.reduce((s, i) => s + (i.amount ?? 0), 0);
 
+// 예상 금액을 정우·계주·공용 따로. 기본은 금액 있는 사람이 둘 이상일 때만 (한 사람뿐이면 합계와 같으니)
+// always: 한 사람뿐이어도 누구 것인지 보이게 (다음 달 줄은 목록이 안 보이므로)
+const UserSums = ({ list, always = false }) => {
+  if (IS_SINGLE_USER) return null;
+  const sums = USERS.map(({ id }) => ({ id, sum: sumAmount(list.filter((i) => i.user === id)) })).filter((u) => u.sum > 0);
+  if (sums.length < (always ? 1 : 2)) return null;
+  return (
+    <span className="shopping__user-sums">
+      {sums.map(({ id, sum }) => (
+        <span key={id} className="shopping__user-sum">
+          <UserBadge userId={id} />
+          {formatAmount(sum)}
+        </span>
+      ))}
+    </span>
+  );
+};
+
 const Totals = ({ list }) => {
   const sum = sumAmount(list);
   return (
-    <p className="recurring__totals">
-      {list.length}개{sum > 0 && <> · 예상 <strong>{formatAmount(sum)}</strong></>}
-    </p>
+    <div className="recurring__totals shopping__totals">
+      <span>
+        {list.length}개{sum > 0 && <> · 예상 <strong>{formatAmount(sum)}</strong></>}
+      </span>
+      <UserSums list={list} />
+    </div>
   );
 };
 
@@ -170,6 +191,7 @@ const Totals = ({ list }) => {
 // monthKey: 헤더에서 보고 있는 달, todayMonthKey: 미정 항목을 체크하면 이번 달로 옮긴다
 const ShoppingList = ({ items, month, monthKey, todayMonthKey, viewLabel, defaultUser, onAdd, onUpdate, onDelete, onRecord }) => {
   const [showDone, setShowDone] = useState(false);
+  const [showUndecided, setShowUndecided] = useState(false);
   const [editingId, setEditingId] = useState(null);
 
   const byCreated = (a, b) => a.createdAt - b.createdAt;
@@ -177,6 +199,11 @@ const ShoppingList = ({ items, month, monthKey, todayMonthKey, viewLabel, defaul
   const todo = monthItems.filter((i) => !i.done).sort(byCreated);
   const done = monthItems.filter((i) => i.done).sort((a, b) => b.createdAt - a.createdAt);
   const undecided = items.filter((i) => !i.month && !i.done).sort(byCreated);
+  // 다음 달로 넘기지 않아도 몇 개 잡혀 있는지 보이게
+  const [year, monthNum] = monthKey.split('-').map(Number);
+  const next = addMonth(year, monthNum - 1, 1);
+  const nextTodo = items.filter((i) => i.month === toMonthKey(next.year, next.month) && !i.done);
+  const nextSum = sumAmount(nextTodo);
 
   const handleEdit = (data) => {
     onUpdate(editingId, data);
@@ -296,14 +323,43 @@ const ShoppingList = ({ items, month, monthKey, todayMonthKey, viewLabel, defaul
         </div>
       )}
 
+      <div className="shopping__next">
+        <span>
+          다음 달({next.month + 1}월)에 살 것{' '}
+          {nextTodo.length > 0 ? (
+            <>
+              <strong>{nextTodo.length}개</strong>
+              {nextSum > 0 && <> · 예상 {formatAmount(nextSum)}</>}
+            </>
+          ) : (
+            '없음'
+          )}
+        </span>
+        <UserSums list={nextTodo} always />
+      </div>
+
       <div className="shopping__undecided">
-        <h3 className="shopping__subtitle">언제 살지 미정</h3>
-        {undecided.length > 0 && <Totals list={undecided} />}
-        {undecided.length === 0 ? (
-          <p className="summary-card__empty">살 달을 &lsquo;언제 살지 미정&rsquo;으로 두면 여기에 모여요.</p>
-        ) : (
-          renderTodo(undecided)
-        )}
+        <button
+          type="button"
+          className="shopping__toggle"
+          onClick={() => setShowUndecided((v) => !v)}
+          aria-expanded={showUndecided}
+        >
+          <h3 className="shopping__subtitle">언제 살지 미정</h3>
+          <span className="shopping__toggle-summary">
+            {undecided.length}개{sumAmount(undecided) > 0 && <> · 예상 {formatAmount(sumAmount(undecided))}</>}
+          </span>
+          <span className={`shopping__chevron${showUndecided ? ' is-open' : ''}`} aria-hidden="true" />
+        </button>
+        {showUndecided &&
+          (undecided.length === 0 ? (
+            <p className="summary-card__empty">살 달을 &lsquo;언제 살지 미정&rsquo;으로 두면 여기에 모여요.</p>
+          ) : (
+            <>
+              <UserSums list={undecided} />
+              {renderTodo(undecided)}
+            </>
+          ))}
       </div>
     </section>
   );
