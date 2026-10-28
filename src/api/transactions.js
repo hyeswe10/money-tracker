@@ -18,6 +18,10 @@ export const fromRow = (row) => ({
   recurringId: row.recurring_id ?? null,
   recurringMonth: row.recurring_month ? row.recurring_month.slice(0, 7) : null, // 'YYYY-MM'
   skipped: Boolean(row.skipped),
+  installmentId: row.installment_id ?? null,
+  installmentNo: row.installment_no ?? null,
+  installmentMonths: row.installment_months ?? null,
+  installmentFee: Number(row.installment_fee ?? 0),
 });
 
 // 앱 객체 → DB 행 (넘어온 필드만)
@@ -96,6 +100,27 @@ export const subscribeTransactions = ({ onUpsert, onDelete }) => {
   return () => {
     supabase.removeChannel(channel);
   };
+};
+
+// 할부: 회차별 내역을 한 번에 저장 (installmentId는 앱에서 만들어 모든 회차에 같은 값)
+export const insertInstallmentRows = async (rows) => {
+  const payload = rows.map((t) => ({
+    ...toRow(t),
+    installment_id: t.installmentId,
+    installment_no: t.installmentNo,
+    installment_months: t.installmentMonths,
+    installment_fee: t.installmentFee,
+  }));
+  const { data, error } = await supabase.from(TABLE).insert(payload).select();
+  if (error) throw error;
+  return data.map(fromRow);
+};
+
+// 할부 전체(모든 회차) 삭제
+export const deleteInstallment = async (installmentId) => {
+  const { data: rows, error } = await supabase.from(TABLE).delete().eq('installment_id', installmentId).select('id');
+  if (error) throw error;
+  return rows.map((r) => r.id);
 };
 
 // 고정 항목에서 생긴 내역은 지우지 않고 '이번 달만 건너뜀'으로 표시 (지우면 다음에 다시 생성되므로)

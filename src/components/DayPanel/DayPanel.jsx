@@ -7,7 +7,17 @@ import './DayPanel.scss';
 
 const sumBy = (list, type) => list.filter((t) => t.type === type).reduce((sum, t) => sum + t.amount, 0);
 
-const DayPanel = ({ date, transactions, defaultUser, onAdd, onAddRule, onUpdate, onDelete }) => {
+const DayPanel = ({
+  date,
+  transactions,
+  defaultUser,
+  onAdd,
+  onAddRule,
+  onAddInstallment,
+  onUpdate,
+  onDelete,
+  onDeleteInstallment,
+}) => {
   const [editingId, setEditingId] = useState(null);
 
   const editing = transactions.find((t) => t.id === editingId);
@@ -19,6 +29,9 @@ const DayPanel = ({ date, transactions, defaultUser, onAdd, onAddRule, onUpdate,
     if (editing) {
       onUpdate(editing.id, data);
       setEditingId(null);
+    } else if (data.installment) {
+      // 할부: 이 날짜를 1회차로 매달 회차별 지출 생성
+      onAddInstallment({ ...data, date });
     } else if (repeat) {
       // 이 날짜를 기준으로 매월/매년 반복되는 고정 항목 등록 → 이번 달 내역은 자동 생성
       onAddRule({
@@ -35,6 +48,13 @@ const DayPanel = ({ date, transactions, defaultUser, onAdd, onAddRule, onUpdate,
 
   const handleDelete = (id) => {
     const target = transactions.find((t) => t.id === id);
+    if (target?.installmentId) {
+      // 회차 하나만 지우면 할부가 어긋나므로 전체를 지운다 (금액만 다르면 '수정'으로)
+      if (!window.confirm(`${target.installmentMonths}개월 할부 전체(모든 회차)를 삭제할까요?`)) return;
+      onDeleteInstallment(target.installmentId);
+      if (id === editingId) setEditingId(null);
+      return;
+    }
     const message = target?.recurringId
       ? "이 달만 건너뛸까요?\n(고정 항목 자체를 없애려면 아래 '고정 항목' 카드에서 삭제하세요)"
       : '이 내역을 삭제할까요?';

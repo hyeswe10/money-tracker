@@ -7,7 +7,7 @@ import UserBadge from '../UserBadge/UserBadge';
 const SIGNS = { income: '+', expense: '-', saving: '', transfer: '+' };
 
 const TransactionItem = ({ transaction, isUpcoming, isEditing, onEdit, onDelete }) => {
-  const { id, type, amount, category, memo, user, recurringId, planned } = transaction;
+  const { id, type, amount, category, memo, user, recurringId, planned, installmentId } = transaction;
   const classNames = ['tx-item', isEditing && 'is-editing', isUpcoming && 'is-upcoming'].filter(Boolean).join(' ');
 
   return (
@@ -22,6 +22,12 @@ const TransactionItem = ({ transaction, isUpcoming, isEditing, onEdit, onDelete 
           {memo && <span className="tx-item__category">{category}</span>}
           <UserBadge userId={user} />
           {recurringId && <span className="tx-item__tag">고정</span>}
+          {installmentId && (
+            <span className="tx-item__tag tx-item__tag--installment">
+              할부 {transaction.installmentNo}/{transaction.installmentMonths}
+              {transaction.installmentFee > 0 && ` · 이자 ${formatAmount(transaction.installmentFee)}`}
+            </span>
+          )}
           {isCoupayUse(transaction) && <span className="tx-item__tag tx-item__tag--coupay">쿠페이 차감</span>}
           {isUpcoming && <span className="tx-item__tag tx-item__tag--upcoming">예정</span>}
         </span>
@@ -40,7 +46,7 @@ const TransactionItem = ({ transaction, isUpcoming, isEditing, onEdit, onDelete 
               수정
             </button>
             <button type="button" className="is-danger" onClick={() => onDelete(id)}>
-              {recurringId ? '이 달 건너뛰기' : '삭제'}
+              {recurringId ? '이 달 건너뛰기' : installmentId ? '할부 삭제' : '삭제'}
             </button>
           </>
         )}

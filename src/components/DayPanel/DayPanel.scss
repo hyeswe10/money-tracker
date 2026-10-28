@@ -339,6 +339,47 @@
     color: $color-muted;
   }
 
+  // 할부 계산 미리보기
+  &__plan {
+    margin: -4px 0 0;
+    padding: 10px 12px;
+    border-radius: $radius;
+    background: $color-subtle;
+    font-size: 12px;
+    color: $color-text-soft;
+
+    strong {
+      color: $color-text;
+    }
+
+    summary {
+      margin-top: 6px;
+      color: $color-primary;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    ol {
+      margin: 6px 0 0;
+      padding: 0;
+      list-style: none;
+      max-height: 180px;
+      overflow-y: auto;
+
+      li {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 3px 0;
+        font-variant-numeric: tabular-nums;
+      }
+
+      small {
+        color: $color-muted;
+      }
+    }
+  }
+
   &__check {
     display: flex;
     align-items: center;
@@ -383,4 +424,10 @@
 .tx-item__tag--coupay {
   background: rgba($color-coupay, 0.1);
   color: $color-coupay;
+}
+
+// 카드 할부 회차 태그
+.tx-item__tag--installment {
+  background: $color-primary-soft;
+  color: $color-primary;
 }

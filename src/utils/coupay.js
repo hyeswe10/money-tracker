@@ -4,8 +4,8 @@ import { COUPAY_CHARGE } from '../constants/categories';
 // 쿠페이머니 충전: '충전' 유형의 쿠페이머니 충전 내역
 export const isCoupayCharge = (t) => t.type === 'transfer' && t.category === COUPAY_CHARGE;
 
-// 쿠페이머니 사용: 메모에 쿠팡(쿠팡, coupang, 로켓와우 등)이 들어간 지출
-export const isCoupayUse = (t) => t.type === 'expense' && detectBrand(t.memo)?.id === 'coupang';
+// 쿠페이머니 사용: 메모에 쿠팡(쿠팡, coupang, 로켓와우 등)이 들어간 지출. 할부는 카드 결제라 제외
+export const isCoupayUse = (t) => t.type === 'expense' && !t.installmentId && detectBrand(t.memo)?.id === 'coupang';
 
 const byDate = (a, b) => a.date.localeCompare(b.date) || a.createdAt - b.createdAt;
 

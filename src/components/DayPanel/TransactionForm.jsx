@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { detectBrand } from '../../constants/brands';
 import { CATEGORIES, TRANSACTION_TYPES, TYPE_LABELS } from '../../constants/categories';
 import { IS_SINGLE_USER, USERS } from '../../constants/users';
+import { formatAmount } from '../../utils/format';
+import { INSTALLMENT_MONTHS, buildSchedule, summarizeSchedule } from '../../utils/installment';
 import CategoryIcon from '../CategoryIcon/CategoryIcon';
 
 const TYPES = [TRANSACTION_TYPES.EXPENSE, TRANSACTION_TYPES.INCOME, TRANSACTION_TYPES.SAVING, TRANSACTION_TYPES.TRANSFER];
@@ -15,6 +17,16 @@ const FREQUENCIES = [
   { id: 'yearly', label: '매년' },
 ];
 const REPEATS = [{ id: 'none', label: '반복 안 함' }, ...FREQUENCIES];
+const PAYMENTS = [
+  { id: 'once', label: '일시불' },
+  { id: 'installment', label: '할부' },
+];
+const INTERESTS = [
+  { id: 'free', label: '무이자' },
+  { id: 'partial', label: '부분 무이자' },
+  { id: 'paid', label: '이자 있음' },
+];
+const RATE_RE = /^\d{0,2}(\.\d{0,2})?$/;
 
 const EMPTY_FORM = {
   type: TRANSACTION_TYPES.EXPENSE,
@@ -33,6 +45,11 @@ const toFormState = (initial, defaultUser, scheduleDefaults = {}, fixedType, def
     monthOfYear: String(initial?.monthOfYear ?? scheduleDefaults.monthOfYear ?? 1),
     isSubscription: initial?.isSubscription ?? scheduleDefaults.isSubscription ?? false,
     repeat: 'none',
+    payment: 'once',
+    months: '3',
+    interest: 'free',
+    freeMonths: '1',
+    rate: '',
     date: initial?.date ?? defaultDate ?? '',
   };
   const fixed = fixedType ? { type: fixedType, category: CATEGORIES[fixedType][0] } : {};
@@ -92,7 +109,9 @@ const TransactionForm = ({
   const showCancel = isEdit || schedule || Boolean(fixedType);
   const isTransfer = form.type === TRANSACTION_TYPES.TRANSFER;
   const usesCoupay = form.type === TRANSACTION_TYPES.EXPENSE && brand?.id === 'coupang';
-  const isRepeating = allowRepeat && !isEdit && form.repeat !== 'none';
+  // 할부는 새 지출을 날짜 칸에서 입력할 때만 (고정 항목과 함께 쓰지 않음)
+  const isInstallment = allowRepeat && !isEdit && form.type === TRANSACTION_TYPES.EXPENSE && form.payment === 'installment';
+  const isRepeating = allowRepeat && !isEdit && !isInstallment && form.repeat !== 'none';
   const set = (patch) => setForm((prev) => ({ ...prev, ...patch }));
 
   const handleTypeChange = (type) => set({ type, category: CATEGORIES[type][0] });
@@ -101,6 +120,23 @@ const TransactionForm = ({
 
   // 숫자만 남겨서 보관 (표시할 때만 콤마)
   const handleAmountChange = (e) => set({ amount: e.target.value.replace(/[^\d]/g, '') });
+
+  // 연 이자율: 소수점 둘째 자리까지 (예: 15.9)
+  const handleRateChange = (e) => {
+    if (RATE_RE.test(e.target.value)) set({ rate: e.target.value });
+  };
+
+  // 무이자 회차는 전체 개월 수보다 적게 (개월 수를 줄이면 맞춰 줄인다)
+  const months = Number(form.months);
+  const freeMonths = Math.min(Number(form.freeMonths), months - 1);
+  const rate = Number(form.rate);
+  const installment = {
+    months,
+    rate: form.interest === 'free' ? 0 : rate,
+    freeMonths: form.interest === 'free' ? months : form.interest === 'partial' ? freeMonths : 0,
+  };
+  const plan = isInstallment && Number(form.amount) > 0 ? buildSchedule({ amount: Number(form.amount), ...installment }) : null;
+  const planTotals = plan && summarizeSchedule(plan);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -115,6 +151,10 @@ const TransactionForm = ({
     }
     if (withDate && !DATE_RE.test(form.date)) {
       setError('날짜를 입력해주세요.');
+      return;
+    }
+    if (isInstallment && form.interest !== 'free' && !(rate > 0 && rate <= 30)) {
+      setError('연 이자율(%)을 입력해주세요.');
       return;
     }
     if (schedule && !MONTH_KEY_RE.test(form.startMonth)) {
@@ -132,9 +172,10 @@ const TransactionForm = ({
         }
       : {};
     const repeatData = isRepeating ? { repeat: form.repeat, isSubscription: form.isSubscription } : {};
-    onSubmit({ ...base, ...scheduleData, ...repeatData, ...(withDate ? { date: form.date } : {}) });
+    const installmentData = isInstallment ? { installment } : {};
+    onSubmit({ ...base, ...scheduleData, ...repeatData, ...installmentData, ...(withDate ? { date: form.date } : {}) });
     setError('');
-    if (!isEdit) set({ amount: '', memo: '', repeat: 'none', isSubscription: false });
+    if (!isEdit) set({ amount: '', memo: '', repeat: 'none', isSubscription: false, payment: 'once' });
   };
 
   const repeatLabel = form.repeat === 'yearly' ? `매년 ${repeatMonth}월 ${repeatDay}일` : `매월 ${repeatDay}일`;
@@ -282,7 +323,78 @@ const TransactionForm = ({
         </>
       )}
 
-      {allowRepeat && !isEdit && (
+      {allowRepeat && !isEdit && form.type === TRANSACTION_TYPES.EXPENSE && (
+        <div className="tx-form__field">
+          <span>결제</span>
+          <Segment label="결제" options={PAYMENTS} value={form.payment} onChange={(id) => set({ payment: id })} />
+        </div>
+      )}
+      {isInstallment && (
+        <>
+          <div className="tx-form__row">
+            <label className="tx-form__field">
+              <span>개월 수</span>
+              <select name="months" value={form.months} onChange={handleChange}>
+                {INSTALLMENT_MONTHS.map((m) => (
+                  <option key={m} value={m}>
+                    {m}개월
+                  </option>
+                ))}
+              </select>
+            </label>
+            {form.interest !== 'free' && (
+              <label className="tx-form__field">
+                <span>연 이자율 (%)</span>
+                <input name="rate" inputMode="decimal" placeholder="예: 15.9" value={form.rate} onChange={handleRateChange} />
+              </label>
+            )}
+          </div>
+          <Segment label="이자" options={INTERESTS} value={form.interest} onChange={(id) => set({ interest: id })} />
+          {form.interest === 'partial' && (
+            <label className="tx-form__field">
+              <span>무이자 회차</span>
+              <select name="freeMonths" value={freeMonths} onChange={handleChange}>
+                {Array.from({ length: months - 1 }, (_, i) => i + 1).map((n) => (
+                  <option key={n} value={n}>
+                    {n}회차까지 무이자 ({n + 1}회차부터 이자)
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+          {plan && (
+            <div className="tx-form__plan">
+              {planTotals.fee === 0 ? (
+                <span>
+                  매월 <strong>{formatAmount(plan[plan.length - 1].amount)}</strong> × {months}개월
+                  {plan[0].amount !== plan[plan.length - 1].amount && ` (1회차 ${formatAmount(plan[0].amount)})`}
+                </span>
+              ) : (
+                <span>
+                  1회차 <strong>{formatAmount(plan[0].amount)}</strong> · 이자 합계 <strong>{formatAmount(planTotals.fee)}</strong> · 총{' '}
+                  <strong>{formatAmount(planTotals.total)}</strong>
+                </span>
+              )}
+              <details>
+                <summary>회차별 보기 · 매달 {repeatDay}일에 기록</summary>
+                <ol>
+                  {plan.map((r) => (
+                    <li key={r.no}>
+                      <span>{r.no}회차</span>
+                      <span>
+                        {formatAmount(r.amount)}
+                        {r.fee > 0 && <small> (이자 {formatAmount(r.fee)})</small>}
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+              </details>
+            </div>
+          )}
+        </>
+      )}
+
+      {allowRepeat && !isEdit && !isInstallment && (
         <div className="tx-form__field">
           <span>반복 {isRepeating && <small className="tx-form__repeat-hint">{repeatLabel}에 자동 기록</small>}</span>
           <Segment label="반복" options={REPEATS} value={form.repeat} onChange={(id) => set({ repeat: id })} />
@@ -299,7 +411,7 @@ const TransactionForm = ({
           </button>
         )}
         <button type="submit" className="btn btn--primary">
-          {submitLabel ?? (isEdit ? '수정' : isRepeating ? '고정 항목으로 추가' : isTransfer ? '충전' : '추가')}
+          {submitLabel ?? (isEdit ? '수정' : isInstallment ? `${months}개월 할부로 추가` : isRepeating ? '고정 항목으로 추가' : isTransfer ? '충전' : '추가')}
         </button>
       </div>
     </form>

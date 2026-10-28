@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import * as txApi from '../api/transactions';
 import * as ruleApi from '../api/recurring';
 import { getTodayKey } from '../utils/calendar';
+import { buildInstallmentRows } from '../utils/installment';
 import { findMissingRecurring } from '../utils/recurring';
 
 const GENERATE_DELAY_MS = 1500;
@@ -88,6 +89,20 @@ export const useLedgerData = (userKey) => {
 
   const updateTransaction = (id, data) => run(async () => upsertRow(await txApi.updateTransaction(id, data)));
 
+  // 할부: 산 날부터 매달 회차별 지출로 기록
+  const addInstallment = (data) =>
+    run(async () => {
+      const saved = await txApi.insertInstallmentRows(buildInstallmentRows(data));
+      saved.forEach(upsertRow);
+      return saved.length;
+    });
+
+  const deleteInstallment = (installmentId) =>
+    run(async () => {
+      const removedIds = await txApi.deleteInstallment(installmentId);
+      removedIds.forEach(removeRow);
+    });
+
   // 고정 항목에서 생긴 내역은 '이번 달만 건너뜀', 일반 내역은 삭제
   const deleteTransaction = (id) =>
     run(async () => {
@@ -146,6 +161,8 @@ export const useLedgerData = (userKey) => {
     updateTransaction,
     deleteTransaction,
     importTransactions,
+    addInstallment,
+    deleteInstallment,
     addRule,
     updateRule,
     deleteRule,

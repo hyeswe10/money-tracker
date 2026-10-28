@@ -52,6 +52,8 @@ const Ledger = ({ session, memberId, onSignOut }) => {
     updateTransaction,
     deleteTransaction,
     importTransactions,
+    addInstallment,
+    deleteInstallment,
     rules,
     addRule,
     updateRule,
@@ -274,8 +276,10 @@ const Ledger = ({ session, memberId, onSignOut }) => {
               defaultUser={defaultUser}
               onAdd={handleAdd}
               onAddRule={addRule}
+              onAddInstallment={addInstallment}
               onUpdate={updateTransaction}
               onDelete={deleteTransaction}
+              onDeleteInstallment={deleteInstallment}
             />
           </div>
         </main>
